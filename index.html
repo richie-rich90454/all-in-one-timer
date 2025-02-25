@@ -17,9 +17,6 @@
                 text-align: center;
                 font-size: 2rem;
             }
-            #main-title:hover{
-                font-size: 2.2rem;
-            }
             div{
                 text-align: center;
             }
@@ -30,6 +27,17 @@
                 margin: auto;
                 font-size: 6rem;
                 padding: 0;
+                text-align: center;
+                border-radius: .67rem;
+            }
+            .time-controls{
+                background-color: #6BC0EE;
+                min-height: 5rem;
+                width: 30%;
+                margin: auto;
+                margin-bottom: 1rem;
+                padding: 0;
+                border-radius: .66754rem;
             }
         </style>
         <body>
@@ -41,11 +49,25 @@
                 <h2>The Current Time is:</h2>
             </div>
             <div id="timer-body">
-                <div id="stopwatch-box" class="timer-component"></div>
+                <div class="time-controls">
+
+                </div>
+                <div id="stopwatch-box" class="timer-component">
+                    <span id="stopwatch-h">00:</span>
+                    <span id="stopwatch-m">00:</span>
+                    <span id="stopwatch-s">00</span>
+                </div>
             </div>
             <div id="countdown-body">
                 <h2>Countdown:</h2>
-                <div id="countdown-box" class="timer-component"></div>
+                <div class="time-controls">
+
+                </div>
+                <div id="countdown-box" class="timer-component">
+                    <span id="countdown-h">00:</span>
+                    <span id="countdown-m">00:</span>
+                    <span id="countdown-s">00</span>
+                </div>
             </div>
             <div id="about-us">
                 <h2>About Us:</h2>
