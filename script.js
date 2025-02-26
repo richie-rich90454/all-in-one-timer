@@ -41,6 +41,7 @@ function countdown(){
     }
     if (cdH==0&&cdM==0&&cdS==0){
         clearInterval(cdInterval);
+        flashBackground();
     }
     updateCDDisplay();
 }
@@ -78,7 +79,7 @@ document.getElementById("reset-stopwatch").addEventListener("click", function(){
 function flashBackground(){
     let cdBox=document.getElementById("countdown-box");
     let flashing=true;
-    setInterval(function(){
+    let flashInterval=setInterval(function(){
         if (flashing){
             cdBox.style.backgroundColor="#DE0000";
         }
@@ -87,6 +88,10 @@ function flashBackground(){
         }
         flashing=!flashing;
     },500);
+    setTimeout(function(){
+        clearInterval(flashInterval);
+        cdBox.style.backgroundColor="#F0F0F";
+    },5000);
 }
 function parseHMS(seconds){
     let h=Math.floor(seconds/3600);
@@ -98,7 +103,10 @@ document.getElementById("timer-setter").addEventListener("click",function(){
     let totalSeconds=parseInt(document.getElementById("stopwatch-hour").valueAsNumber)*3600+parseInt(document.getElementById("stopwatch-minute").valueAsNumber)*60+parseInt(document.getElementById("stopwatch-seconds").valueAsNumber);
     updateCDDisplay();
     let prasedTime=parseHMS(totalSeconds);
-    
+    cdH=prasedTime.h;
+    cdM=prasedTime.m;
+    cdS=prasedTime.s;
+    updateCDDisplay();
     clearInterval(cdInterval);
     cdInterval=setInterval(countdown,1000);
 });
