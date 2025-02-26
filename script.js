@@ -47,4 +47,5 @@ document.getElementById("reset-stopwatch").addEventListener("click", function(){
     swS=0;
     updateSWDisplay();
     document.getElementById("start-stopwatch").textContent="START STOPWATCH";
+    swRun=false;
 });
