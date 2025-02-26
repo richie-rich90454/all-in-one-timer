@@ -5,6 +5,9 @@ let cdH=0, cdM=0, cdS=0;
 let stopwatchH=document.getElementById("stopwatch-h");
 let stopwatchM=document.getElementById("stopwatch-m");
 let stopwatchS=document.getElementById("stopwatch-s");
+let countdownH=document.getElementById("countdown-h");
+let countdownM=document.getElementById("countdown-m");
+let countdownS=document.getElementById("countdown-s");
 function formatTime(time){
     if (time<10){
         return "0"+time;
@@ -17,6 +20,11 @@ function updateSWDisplay(){
     stopwatchH.textContent=formatTime(swH)+":";
     stopwatchM.textContent=formatTime(swM)+":";
     stopwatchS.textContent=formatTime(swS);
+}
+function updateCDDisplay(){
+    countdownH.textContent=formatTime(cdH)+":";
+    countdownM.textContent=formatTime(cdM)+":";
+    countdownS.textContent=formatTime(cdS);
 }
 function countdown(){
     if (cdS>0){
