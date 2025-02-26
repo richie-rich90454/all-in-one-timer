@@ -18,6 +18,21 @@ function updateSWDisplay(){
     stopwatchM.textContent=formatTime(swM)+":";
     stopwatchS.textContent=formatTime(swS);
 }
+function countdown(){
+    if (cdS>0){
+        cdS--;
+    }
+    else if (cdM>0){
+        cdM--;
+        cdS=59;
+    }
+    else if (cdH>0){
+        cdH--;
+        cdM=59;
+        cdS=59;
+    }
+    
+}
 document.getElementById("start-stopwatch").addEventListener("click", function(){
     if (swRun){
         clearInterval(swInterval);
