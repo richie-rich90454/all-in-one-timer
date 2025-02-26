@@ -21,7 +21,7 @@ function updateSWDisplay(){
 document.getElementById("start-stopwatch").addEventListener("click", function(){
     if (swRun){
         clearInterval(swInterval);
-        this.value="START STOPWATCH";
+        this.textContent="START STOPWATCH";
     }
     else{
         swInterval=setInterval(function(){
@@ -36,7 +36,15 @@ document.getElementById("start-stopwatch").addEventListener("click", function(){
             }
             updateSWDisplay();
         },1000);
-        this.value="STOP STOPWATCH";
+        this.textContent="STOP STOPWATCH";
     }
     swRun=!swRun;
+});
+document.getElementById("reset-stopwatch").addEventListener("click", function(){
+    clearInterval(swInterval);
+    swH=0;
+    swM=0;
+    swS=0;
+    updateSWDisplay();
+    document.getElementById("start-stopwatch").textContent="START STOPWATCH";
 });
