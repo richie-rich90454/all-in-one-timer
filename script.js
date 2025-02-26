@@ -75,11 +75,30 @@ document.getElementById("reset-stopwatch").addEventListener("click", function(){
     document.getElementById("start-stopwatch").textContent="START STOPWATCH";
     swRun=false;
 });
+function flashBackground(){
+    let cdBox=document.getElementById("countdown-box");
+    let flashing=true;
+    setInterval(function(){
+        if (flashing){
+            cdBox.style.backgroundColor="#DE0000";
+        }
+        else{
+            cdBox.style.backgroundColor="#F0F0F0";
+        }
+        flashing=!flashing;
+    },500);
+}
+function parseHMS(seconds){
+    let h=Math.floor(seconds/3600);
+    let m=Math.floor((seconds%3600)/60);
+    let s=seconds%60;
+    return {h,m,seconds:s}
+}
 document.getElementById("timer-setter").addEventListener("click",function(){
-    cdH=parseInt(document.getElementById("stopwatch-hour").valueAsNumber)||0;
-    cdM=parseInt(document.getElementById("stopwatch-minute").valueAsNumber)||0;
-    cdS=parseInt(document.getElementById("stopwatch-seconds").valueAsNumber)||0;
+    let totalSeconds=parseInt(document.getElementById("stopwatch-hour").valueAsNumber)*3600+parseInt(document.getElementById("stopwatch-minute").valueAsNumber)*60+parseInt(document.getElementById("stopwatch-seconds").valueAsNumber);
     updateCDDisplay();
+    let prasedTime=parseHMS(totalSeconds);
+    
     clearInterval(cdInterval);
     cdInterval=setInterval(countdown,1000);
 });
