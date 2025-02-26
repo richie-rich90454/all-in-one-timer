@@ -66,6 +66,15 @@
                 padding: 1rem;
                 border-radius: 1rem;
             }
+            #start-stopwatch{
+                font-size: 2.5rem;
+                font-weight: bold;
+                border: 1px dashed #000;
+                cursor: pointer;
+            }
+            #start-stopwatch:hover{
+                transform: scaleY(1.2);
+            }
         </style>
         <body>
             <h1 id="main-title">An All-in-one website for clock, timer, and countdown</h1>
@@ -82,8 +91,7 @@
             </div>
             <div id="timer-body" class="main-portion">
                 <h2>Stopwatch:</h2>
-                <div class="time-controls">
-                </div>
+                <div class="time-controls" id="start-stopwatch">START STOPWATCH</div>
                 <div id="stopwatch-box" class="timer-component">
                     <span id="stopwatch-h">00:</span>
                     <span id="stopwatch-m">00:</span>
