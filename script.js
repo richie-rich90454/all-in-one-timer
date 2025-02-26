@@ -8,6 +8,7 @@ let stopwatchS=document.getElementById("stopwatch-s");
 let countdownH=document.getElementById("countdown-h");
 let countdownM=document.getElementById("countdown-m");
 let countdownS=document.getElementById("countdown-s");
+let flashInterval;
 function formatTime(time){
     if (time<10){
         return "0"+time;
@@ -79,7 +80,7 @@ document.getElementById("reset-stopwatch").addEventListener("click", function(){
 function flashBackground(){
     let cdBox=document.getElementById("countdown-box");
     let flashing=true;
-    let flashInterval=setInterval(function(){
+    flashInterval=setInterval(function(){
         if (flashing){
             cdBox.style.backgroundColor="#DE0000";
         }
@@ -97,15 +98,29 @@ function parseHMS(seconds){
     let h=Math.floor(seconds/3600);
     let m=Math.floor((seconds%3600)/60);
     let s=seconds%60;
-    return {h,m,seconds:s}
+    return {h,m,s}
 }
 document.getElementById("timer-setter").addEventListener("click",function(){
-    let totalSeconds=parseInt(document.getElementById("stopwatch-hour").valueAsNumber)*3600+parseInt(document.getElementById("stopwatch-minute").valueAsNumber)*60+parseInt(document.getElementById("stopwatch-seconds").valueAsNumber);
-    updateCDDisplay();
-    let prasedTime=parseHMS(totalSeconds);
-    cdH=prasedTime.h;
-    cdM=prasedTime.m;
-    cdS=prasedTime.s;
+    clearInterval(flashInterval);
+    let hours=parseInt(document.getElementById("stopwatch-hour").value)||0;
+    let minutes=parseInt(document.getElementById("stopwatch-minute").value)||0;
+    let seconds=parseInt(document.getElementById("stopwatch-seconds").value)||0;
+    if (hours<0){
+        hours=0;
+        document.getElementById("stopwatch-hour").value=0;
+    }
+    if (minutes<0){
+        minutes=0;
+        document.getElementById("stopwatch-minutes").value=0;
+    }
+    if (seconds<0){
+        seconds=0;
+        document.getElementById("stopwatch-seconds").value=0;
+    }
+    let parsedTime=parseHMS(hours*3600+minutes*60+seconds);
+    cdH=parsedTime.h;
+    cdM=parsedTime.m;
+    cdS=parsedTime.s;
     updateCDDisplay();
     clearInterval(cdInterval);
     cdInterval=setInterval(countdown,1000);
