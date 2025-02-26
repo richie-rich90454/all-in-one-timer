@@ -31,7 +31,10 @@ function countdown(){
         cdM=59;
         cdS=59;
     }
-    
+    if (cdH==0&&cdM==0&&cdS==0){
+        clearInterval(cdInterval);
+    }
+    updateCDDisplay();
 }
 document.getElementById("start-stopwatch").addEventListener("click", function(){
     if (swRun){
