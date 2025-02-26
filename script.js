@@ -46,6 +46,12 @@ function countdown(){
     }
     updateCDDisplay();
 }
+function updateLocalTime(){
+    let currentTime=new Date();
+    document.getElementById("time-h").textContent=formatTime(currentTime.getHours())+":";
+    document.getElementById("time-m").textContent=formatTime(currentTime.getMinutes())+":";
+    document.getElementById("time-s").textContent=formatTime(currentTime.getSeconds());
+}
 document.getElementById("start-stopwatch").addEventListener("click", function(){
     if (swRun){
         clearInterval(swInterval);
@@ -125,3 +131,5 @@ document.getElementById("timer-setter").addEventListener("click",function(){
     clearInterval(cdInterval);
     cdInterval=setInterval(countdown,1000);
 });
+setInterval(updateLocalTime, 1000);
+updateLocalTime();
