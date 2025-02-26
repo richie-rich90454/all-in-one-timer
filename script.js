@@ -76,9 +76,9 @@ document.getElementById("reset-stopwatch").addEventListener("click", function(){
     swRun=false;
 });
 document.getElementById("timer-setter").addEventListener("click",function(){
-    cdH=parseInt(countdownH.value)||0;
-    cdM=parseInt(countdownM.value)||0;
-    cdS=parseInt(countdownS.value)||0;
+    cdH=parseInt(document.getElementById("stopwatch-hour").valueAsNumber)||0;
+    cdM=parseInt(document.getElementById("stopwatch-minute").valueAsNumber)||0;
+    cdS=parseInt(document.getElementById("stopwatch-seconds").valueAsNumber)||0;
     updateCDDisplay();
     clearInterval(cdInterval);
     cdInterval=setInterval(countdown,1000);
