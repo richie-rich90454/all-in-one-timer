@@ -56,9 +56,11 @@
             }
             input[type="button"]:hover{
                 font-size: 1.2rem;
-                transform:rotate3d();
+                transform:rotate(-10deg);
             }
-
+            .main-portion{
+                
+            }
         </style>
         <body>
             <h1 id="main-title">An All-in-one website for clock, timer, and countdown</h1>
@@ -89,8 +91,9 @@
                     <input type="number" id="stopwatch-hour" class="time-input-boxes" min="0" placeholder="Enter hours">
                     <input type="number" id="stopwatch-minute" class="time-input-boxes" min="0" max="60" placeholder="Enter Minutes">
                     <input type="number" id="stopwatch-seconds" class="time-input-boxes" min="0" max="60" placeholder="Enter Seconds">
-                    <br>
-                    <input type="button" id="stopwatch-setter" value="Set Timer">
+                    <div style="margin-top: 0.5rem;">
+                        <input type="button" id="stopwatch-setter" value="Set Timer">
+                    </div>
                 </div>
                 <div id="countdown-box" class="timer-component">
                     <span id="countdown-h">00:</span>
