@@ -80,4 +80,6 @@ document.getElementById("timer-setter").addEventListener("click",function(){
     cdM=parseInt(countdownM.value)||0;
     cdS=parseInt(countdownS.value)||0;
     updateCDDisplay();
+    clearInterval(cdInterval);
+    cdInterval=setInterval(countdown,1000);
 });
