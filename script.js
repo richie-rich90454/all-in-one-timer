@@ -21,7 +21,7 @@ function updateSWDisplay(){
 document.getElementById("start-stopwatch").addEventListener("click", function(){
     if (swRun){
         clearInterval(swInterval);
-        this.textContent="START STOPWATCH";
+        this.value="START STOPWATCH";
     }
     else{
         swInterval=setInterval(function(){
@@ -36,6 +36,7 @@ document.getElementById("start-stopwatch").addEventListener("click", function(){
             }
             updateSWDisplay();
         },1000);
-        this.textContent="STOP STOPWATCH";
+        this.value="STOP STOPWATCH";
     }
+    swRun=!swRun;
 });

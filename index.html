@@ -75,6 +75,9 @@
             #start-stopwatch:hover{
                 transform: scaleY(1.2);
             }
+            button{
+                font-family: "Noto Sans SC", serif;
+            }
         </style>
     </head>
     <body>
@@ -92,7 +95,9 @@
         </div>
         <div id="timer-body" class="main-portion">
             <h2>Stopwatch:</h2>
-            <div class="time-controls" id="start-stopwatch">START STOPWATCH</div>
+            <div class="time-controls">
+                <button id="start-stopwatch" class="">START TIMER</button>
+            </div>
             <div id="stopwatch-box" class="timer-component">
                 <span id="stopwatch-h">00:</span>
                 <span id="stopwatch-m">00:</span>
