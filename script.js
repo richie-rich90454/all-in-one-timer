@@ -75,3 +75,9 @@ document.getElementById("reset-stopwatch").addEventListener("click", function(){
     document.getElementById("start-stopwatch").textContent="START STOPWATCH";
     swRun=false;
 });
+document.getElementById("timer-setter").addEventListener("click",function(){
+    cdH=parseInt(countdownH.value)||0;
+    cdM=parseInt(countdownM.value)||0;
+    cdS=parseInt(countdownS.value)||0;
+    updateCDDisplay();
+});
