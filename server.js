@@ -2,7 +2,7 @@ const http=require("http");
 const fs=require("fs");
 const path=require("path");
 const port=1331;
-const server=http.createServer((req, res) => {
+const server=http.createServer((req, res)=>{
     let filePath="." + req.url;
     if (filePath=="./") {
         filePath="./index.html";
@@ -19,7 +19,7 @@ const server=http.createServer((req, res) => {
         ".flac": "audio/flac",
     };
     const contentType=mimeTypes[extname]||"application/octet-stream";
-    fs.readFile(filePath, (err, content) => {
+    fs.readFile(filePath, (err, content)=>{
         if (err) {
             if (err.code=="ENOENT") {
                 res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
@@ -37,6 +37,6 @@ const server=http.createServer((req, res) => {
         }
     });
 });
-server.listen(port, () => {
+server.listen(port, ()=>{
     console.log(`Server running at http://localhost:${port}`);
 });
