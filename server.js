@@ -18,7 +18,7 @@ const server=http.createServer((req, res) => {
         ".ogg": "audio/ogg",
         ".flac": "audio/flac",
     };
-    const contentType=mimeTypes[extname] || "application/octet-stream";
+    const contentType=mimeTypes[extname]||"application/octet-stream";
     fs.readFile(filePath, (err, content) => {
         if (err) {
             if (err.code=="ENOENT") {
