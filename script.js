@@ -162,3 +162,14 @@ document.addEventListener("keydown", function(event) {
         event.preventDefault();
     }
 });
+document.addEventListener("keydown", function(event) {
+    if (event.key === "PrintScreen") {
+        navigator.clipboard.writeText(""); // Clear clipboard
+        // alert("Screenshots are disabled on this site.");
+        event.preventDefault();
+    }
+});
+document.addEventListener("copy", function(event) {
+    event.preventDefault();
+    // alert("Copying content is disabled.");
+});
