@@ -51,6 +51,12 @@ function updateLocalTime(){
     document.getElementById("time-h").textContent=formatTime(currentTime.getHours())+":";
     document.getElementById("time-m").textContent=formatTime(currentTime.getMinutes())+":";
     document.getElementById("time-s").textContent=formatTime(currentTime.getSeconds());
+    if (currentTime.getTimezoneOffset()>0){
+        document.getElementById("time-zone").textContent=formatTime(` (UTC-${currentTime.getTimezoneOffset()/60})`);
+    }
+    else{
+        document.getElementById("time-zone").textContent=formatTime(` (UTC+${-currentTime.getTimezoneOffset()/60})`);
+    }
 }
 document.getElementById("start-stopwatch").addEventListener("click", function(){
     if (swRun){
