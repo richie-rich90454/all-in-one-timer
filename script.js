@@ -87,7 +87,6 @@ function flashBackground(){
     let cdBox=document.getElementById("countdown-box");
     let flashing=true;
     setTimeout(playOverspeedAlert,500);
-    // playOverspeedAlert();
     flashInterval=setInterval(function(){
         if (flashing){
             cdBox.style.backgroundColor="#DE0000";
