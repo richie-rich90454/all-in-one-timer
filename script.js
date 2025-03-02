@@ -86,6 +86,8 @@ document.getElementById("reset-stopwatch").addEventListener("click", function(){
 function flashBackground(){
     let cdBox=document.getElementById("countdown-box");
     let flashing=true;
+    setTimeout(playOverspeedAlert,500);
+    // playOverspeedAlert();
     flashInterval=setInterval(function(){
         if (flashing){
             cdBox.style.backgroundColor="#DE0000";
@@ -101,20 +103,17 @@ function flashBackground(){
     },5000);
 }
 function playOverspeedAlert() {
-    let audio = document.createElement("audio");
-    audio.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YQAA";
-    context
-    document.body.appendChild(audio);
-    
     function playBeep(timeOffset) {
         setTimeout(() => {
-            let beep = new Audio();
-            let freq = [880, 660, 880, 660, 880];
-            beep.src = `data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YQAA`;
-            beep.play();
-        }, timeOffset * 400);
+            let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            let oscillator = audioCtx.createOscillator();
+            oscillator.type = "square";
+            oscillator.frequency.setValueAtTime(timeOffset % 2 === 0 ? 880 : 660, audioCtx.currentTime);
+            oscillator.connect(audioCtx.destination);
+            oscillator.start();
+            setTimeout(() => oscillator.stop(), 600);
+        }, timeOffset * 1000);
     }
-    
     for (let i = 0; i < 5; i++) {
         playBeep(i);
     }
