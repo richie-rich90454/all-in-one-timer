@@ -156,8 +156,8 @@ document.getElementById("timer-setter").addEventListener("click",function(){
 });
 setInterval(updateLocalTime, 1000);
 updateLocalTime();
-document.addEventListener("contextmenu", (event) => event.preventDefault());
-document.addEventListener("keydown", function(event) {
+document.addEventListener("contextmenu", (event)=>event.preventDefault());
+document.addEventListener("keydown", function(event){
     if (event.keyCode==123||(event.ctrlKey && event.shiftKey && event.keyCode==73)||(event.ctrlKey && event.shiftKey && event.keyCode==74)||(event.ctrlKey && event.keyCode==85)){
         event.preventDefault();
     }
