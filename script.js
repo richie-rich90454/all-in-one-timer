@@ -97,8 +97,27 @@ function flashBackground(){
     },500);
     setTimeout(function(){
         clearInterval(flashInterval);
-        cdBox.style.backgroundColor="#F0F0F";
+        cdBox.style.backgroundColor="#F0F0F0";
     },5000);
+}
+function playOverspeedAlert() {
+    let audio = document.createElement("audio");
+    audio.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YQAA";
+    context
+    document.body.appendChild(audio);
+    
+    function playBeep(timeOffset) {
+        setTimeout(() => {
+            let beep = new Audio();
+            let freq = [880, 660, 880, 660, 880];
+            beep.src = `data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YQAA`;
+            beep.play();
+        }, timeOffset * 400);
+    }
+    
+    for (let i = 0; i < 5; i++) {
+        playBeep(i);
+    }
 }
 function parseHMS(seconds){
     let h=Math.floor(seconds/3600);
