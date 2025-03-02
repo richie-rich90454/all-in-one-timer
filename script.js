@@ -162,7 +162,3 @@ document.addEventListener("keydown", function(event) {
         event.preventDefault();
     }
 });
-document.addEventListener("copy", function(event) {
-    event.preventDefault();
-    alert("Copying content is disabled.");
-});
