@@ -108,27 +108,44 @@ function flashBackground(){
         cdBox.style.backgroundColor="#F0F0F0";
     },5000);
 }
-function playOverspeedAlert() {
-    function playBeep(timeOffset) {
-        setTimeout(()=>{
-            audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-            let oscillator=audioCtx.createOscillator();
+function playOverspeedAlert(){
+    if (!audioCtx){
+        audioCtx=new (window.AudioContext||window.webkitAudioContext);
+    }
+    const resumeAndPlay=()=>{
+        const now=audioCtx.currentTime;
+        for (let i=0;i<5;i++){
+            const oscillator=audioCtx.createOscillator();
             oscillator.type="square";
-            oscillator.frequency.setValueAtTime(timeOffset%2==0?880:660, audioCtx.currentTime);
+            oscillator.frequency.setValueAtTime(i%2==0?880:660,now+i);
             oscillator.connect(audioCtx.destination);
-            oscillator.start();
-            setTimeout(()=>oscillator.stop(), 600);
-        }, timeOffset*1000);
+            oscillator.start(now+i);
+            oscillator.stop(now+i+0.6);
+        }
+    };
+    if (audioCtx.state=="suspended"){
+        audioCtx.resume().then(resumeAndPlay);
     }
-    for (let i=0; i<5; i++) {
-        playBeep(i);
+    else{
+        resumeAndPlay();
     }
+    // function playBeep(timeOffset){
+        // setTimeout(()=>{
+        //     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+        //     let oscillator=audioCtx.createOscillator();
+        //     oscillator.type="square";
+        //     oscillator.frequency.setValueAtTime(timeOffset%2==0?880:660, audioCtx.currentTime);
+        //     oscillator.connect(audioCtx.destination);
+        //     oscillator.start();
+        //     setTimeout(()=>oscillator.stop(), 600);
+        // }, timeOffset*1000);
+    // } 
 }
 function parseHMS(seconds){
     let h=Math.floor(seconds/3600);
     let m=Math.floor((seconds%3600)/60);
     let s=seconds%60;
-    return {h,m,s}
+    return{h,m,s}
 }
 document.getElementById("timer-setter").addEventListener("click",function(){
     if (!audioCtx){
