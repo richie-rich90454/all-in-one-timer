@@ -1,148 +1,132 @@
 <!DOCTYPE html>
 <html>
-    <title>Time</title>
     <head>
+        <title>Time</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" type="image/x-icon" href="favicon.png">
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap" rel="stylesheet">
-        <script src="jquery-3.7.1.js" defer></script>
         <style>
             body{
                 font-family: "Noto Sans SC";
                 margin: 0;
                 padding: 0;
-                background-color: #DCDC00;
+                background-color: #32A5E4;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                min-height: 80vh;
+            }
+            input{
+                font-family: "Noto Sans SC";
             }
             #main-title{
                 margin: auto;
                 text-align: center;
                 font-size: 2rem;
             }
-            div{
-                text-align: center;
+            .main-portion{
+                width: 95%;
+                max-width: 50rem;
+                border: 2px solid #000;
+                margin: 1rem auto;
+                border-radius: 1rem;
             }
             .timer-component{
-                background-color: #F0F0F0;
-                min-height: 10rem;
+                background-color: #FFF;
+                min-height: 20vh;
                 width: 60%;
-                margin: auto;
-                font-size: 6rem;
-                padding: 0;
+                margin: 1rem auto;
+                font-size: 2.5vw;
                 text-align: center;
                 border-radius: .67rem;
             }
             .time-controls{
-                background-color: #6BC0EE;
-                min-height: 5rem;
-                width: 30%;
+                background-color: #DE0000;
+                width: 85%;
                 margin: 1rem auto;
-                padding: 0;
-                border-radius: .66754rem;
+                border-radius: 0.66754rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 1rem;
             }
             .time-input-boxes{
-                width: 30%;
+                width: 100%;
                 font-size: 1rem;
                 padding: 0.2rem;
-                border-radius: .50rem;
+                margin: 0.2rem;
+                border-radius: 0.5rem;
                 border: 1px dashed #000;
-                margin-top: 0.2rem;
-            }
-            input{
-                font-family: "Noto Sans SC";
-            }
-            input[type="button"]{
-                cursor: pointer;
-                font-size: 1rem;
-                padding: 0.2rem;
-                border-radius: .50rem;
-                border: 1px dashed #000;
-                font-weight: bold;
-            }
-            .main-portion{
-                border: 2px solid #000;
-                width: 88%;
-                margin: 1rem auto;
-                padding: 1rem;
-                border-radius: 1rem;
-            }
-            #start-stopwatch, #reset-stopwatch{
-                font-size: 1rem;
-                font-weight: bold;
-                border: 1px dashed #000;
-                cursor: pointer;
-                margin-top: 1rem;
-            }
-            #start-stopwatch:hover, #reset-stopwatch:hover, input[type="button"]:hover{
-                transform: scaleY(1.2);
             }
             button{
                 font-family: "Noto Sans SC";
+                width: 100%;
+                font-size: 1rem;
+                padding: 0.2rem;
+                margin: 0.2rem;
+                border-radius: 0.5rem;
+                border: 1px dashed #000;
+                cursor: pointer;
             }
-            #timer-setter{
-                margin-bottom: 1rem;
+            button:hover{
+                transform: scaleY(1.5);
+            }
+            h2{
+                text-align: center;
+            }
+            @media (min-width: 768px){
+                .timer-component{
+                    font-size: 6rem;
+                }
+                .time-input-boxes{
+                    width: 30%;
+                }
+                .time-controls{
+                    flex-direction: row; justify-content: space-around;
+                }
+                button{
+                    width: 45%;
+                }
             }
         </style>
-        <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-        <script>
-             (adsbygoogle = window.adsbygoogle || []).push({
-                  google_ad_client: "pub-2031826200133245",
-                  enable_page_level_ads: true
-             });
-        </script> -->
     </head>
     <body>
-        <h1 id="main-title">An All-in-one website for clock, timer, and countdown</h1>
-        <!-- <div id="ads-one" class="ads">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="pub-2031826200133245" data-ad-slot="YOUR_AD_SLOT_ID" data-ad-format="auto" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div> -->
-        <div id="timer-body" class="main-portion">
-            <h2>Stopwatch:</h2>
+        <h1 id="main-title">All-in-one Time Tool</h1>
+        <div class="main-portion">
+            <h2>Stopwatch</h2>
             <div class="time-controls">
-                <button id="start-stopwatch">START TIMER</button>
+                <button id="start-stopwatch">START</button>
                 <button id="reset-stopwatch">RESET</button>
             </div>
-            <div id="stopwatch-box" class="timer-component">
+            <div class="timer-component" id="stopwatch-box">
                 <span id="stopwatch-h">00:</span>
                 <span id="stopwatch-m">00:</span>
                 <span id="stopwatch-s">00</span>
             </div>
         </div>
-        <div id="clock-body" class="main-portion">
-            <h2>The Current Time is:</h2>
-            <div id="clock-box" class="timer-component">
+        <div class="main-portion">
+            <h2>Current Time</h2>
+            <div class="timer-component" id="clock-box">
                 <span id="time-h">00:</span>
                 <span id="time-m">00:</span>
                 <span id="time-s">00</span>
-                <span id="time-zone"> (UTC+0)</span>
+                <span id="time-zone">(UTC+0)</span>
             </div>
         </div>
-        <div id="countdown-body" class="main-portion">
-            <h2>Countdown:</h2>
+        <div class="main-portion">
+            <h2>Countdown</h2>
             <div class="time-controls">
-                <input type="number" id="stopwatch-hour" class="time-input-boxes" min="0" placeholder="Enter hours">
-                <input type="number" id="stopwatch-minute" class="time-input-boxes" min="0" max="60" placeholder="Enter Minutes">
-                <input type="number" id="stopwatch-seconds" class="time-input-boxes" min="0" max="60" placeholder="Enter Seconds">
-                <div style="margin-top: 1rem;">
-                    <input type="button" id="timer-setter" value="Set Timer">
-                </div>
+                <input type="number" id="stopwatch-hour" class="time-input-boxes" min="0" placeholder="Hours">
+                <input type="number" id="stopwatch-minute" class="time-input-boxes" min="0" max="59" placeholder="Minutes">
+                <input type="number" id="stopwatch-seconds" class="time-input-boxes" min="0" max="59" placeholder="Seconds">
+                <button id="timer-setter">Set Countdown</button>
             </div>
-            <div id="countdown-box" class="timer-component">
+            <div class="timer-component" id="countdown-box">
                 <span id="countdown-h">00:</span>
                 <span id="countdown-m">00:</span>
                 <span id="countdown-s">00</span>
             </div>
         </div>
-        <div id="about-us">
-            <h2>About Us:</h2>
-            <div id="description-of-us"></div>
-        </div>
-        <!-- <div id="ads-two" class="ads">
-            <ins class="adsbygoogle" style="display:block" data-ad-client="pub-2031826200133245" data-ad-slot="YOUR_AD_SLOT_ID" data-ad-format="auto" data-full-width-responsive="true"></ins>
-            <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-        </div> -->
         <script src="script.js"></script>
-        <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" crossorigin="anonymous"></script> -->
     </body>
 </html>
