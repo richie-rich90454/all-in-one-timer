@@ -9,6 +9,7 @@ let countdownH=document.getElementById("countdown-h");
 let countdownM=document.getElementById("countdown-m");
 let countdownS=document.getElementById("countdown-s");
 let flashInterval;
+let audioCtx;
 function formatTime(time){
     if (time<10){
         return "0"+time;
@@ -109,17 +110,17 @@ function flashBackground(){
 }
 function playOverspeedAlert() {
     function playBeep(timeOffset) {
-        setTimeout(() => {
-            let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            let oscillator = audioCtx.createOscillator();
-            oscillator.type = "square";
-            oscillator.frequency.setValueAtTime(timeOffset % 2 === 0 ? 880 : 660, audioCtx.currentTime);
+        setTimeout(()=>{
+            audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+            let oscillator=audioCtx.createOscillator();
+            oscillator.type="square";
+            oscillator.frequency.setValueAtTime(timeOffset%2==0?880:660, audioCtx.currentTime);
             oscillator.connect(audioCtx.destination);
             oscillator.start();
-            setTimeout(() => oscillator.stop(), 600);
-        }, timeOffset * 1000);
+            setTimeout(()=>oscillator.stop(), 600);
+        }, timeOffset*1000);
     }
-    for (let i = 0; i < 5; i++) {
+    for (let i=0; i<5; i++) {
         playBeep(i);
     }
 }
@@ -130,6 +131,9 @@ function parseHMS(seconds){
     return {h,m,s}
 }
 document.getElementById("timer-setter").addEventListener("click",function(){
+    if (!audioCtx){
+        audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    }
     clearInterval(flashInterval);
     let hours=parseInt(document.getElementById("stopwatch-hour").value)||0;
     let minutes=parseInt(document.getElementById("stopwatch-minute").value)||0;
