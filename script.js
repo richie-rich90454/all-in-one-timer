@@ -44,6 +44,10 @@ function countdown(){
     if (cdH==0&&cdM==0&&cdS==0){
         clearInterval(cdInterval);
         flashBackground();
+        document.title="TIME IS UP";
+        setTimeout(function(){
+            document.title="Time";
+        },5000);
     }
     updateCDDisplay();
 }
@@ -129,17 +133,6 @@ function playOverspeedAlert(){
     else{
         resumeAndPlay();
     }
-    // function playBeep(timeOffset){
-        // setTimeout(()=>{
-        //     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-        //     let oscillator=audioCtx.createOscillator();
-        //     oscillator.type="square";
-        //     oscillator.frequency.setValueAtTime(timeOffset%2==0?880:660, audioCtx.currentTime);
-        //     oscillator.connect(audioCtx.destination);
-        //     oscillator.start();
-        //     setTimeout(()=>oscillator.stop(), 600);
-        // }, timeOffset*1000);
-    // } 
 }
 function parseHMS(seconds){
     let h=Math.floor(seconds/3600);
