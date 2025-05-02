@@ -1,42 +1,30 @@
-const http=require("http");
-const fs=require("fs");
 const path=require("path");
-const port=1331;
-const server=http.createServer((req, res)=>{
-    let filePath="." + req.url;
-    if (filePath=="./") {
-        filePath="./index.html";
+const fastify=require("fastify")();
+const fastifyStatic=require("@fastify/static");
+const port=6006;
+fastify.register(fastifyStatic,{
+    root: path.join(__dirname),
+    wildcardSuffix: "/index.html",
+    onSend: (request, reply)=>{
+        reply.header("Cache-Control", "no-cache, no-store, must-revalidate");
     }
-    const extname=path.extname(filePath).toLowerCase();
-    const mimeTypes={
-        ".html": "text/html; charset=utf-8",
-        ".css": "text/css; charset=utf-8",
-        ".js": "application/javascript; charset=utf-8",
-        ".txt": "text/plain; charset=utf-8",
-        ".mp3": "audio/mpeg",
-        ".wav": "audio/wav",
-        ".ogg": "audio/ogg",
-        ".flac": "audio/flac",
-    };
-    const contentType=mimeTypes[extname]||"application/octet-stream";
-    fs.readFile(filePath, (err, content)=>{
-        if (err) {
-            if (err.code=="ENOENT") {
-                res.writeHead(404, { "Content-Type": "text/html; charset=utf-8" });
-                res.end("<h1>404 Not Found</h1>", "utf-8");
-            } else {
-                res.writeHead(500, { "Content-Type": "text/plain; charset=utf-8" });
-                res.end(`Server error: ${err.message}`, "utf-8");
-            }
-        } else {
-            res.writeHead(200, {
-                "Content-Type": contentType,
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-            });
-            res.end(content);
-        }
-    });
 });
-server.listen(port, ()=>{
-    console.log(`Server running at http://localhost:${port}`);
+fastify.get("/*", async (request, reply)=>{
+    reply.header("Cache-Control", "no-cache, no-store, must-revalidate");
+    return reply.code(404).type("text/html; charset=utf-8").send("<h1>404 Not Found</h1>");
 });
+fastify.setErrorHandler((error, request, reply)=>{
+    reply.header("Cache-Control", "no-cache, no-store, must-revalidate");
+    return reply.code(500).type("text/plain; charset=utf-8").send(`Server error: ${error.message}`);
+});
+const start=async ()=>{
+    try{
+        await fastify.listen({ port, host: "::" });
+        console.log(`Server running at http://localhost:${port}`);
+    }
+    catch (err){
+        fastify.log.error(err);
+        process.exit(1);
+    }
+};
+start();
