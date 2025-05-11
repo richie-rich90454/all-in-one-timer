@@ -1,3 +1,3 @@
-# biszwebclub-timer
+# all-in-one-timer
 Credit:
-    1. freesound.org for some timer alert sounds
+    
