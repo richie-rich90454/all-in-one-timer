@@ -24,32 +24,32 @@ $(document).ready(function(){
     function updateStopwatch(){
         let elapsed=performance.now()-startTime;
         let time=formatTimeWithMs(elapsed);
-        document.getElementById("stopwatch-h").textContent=time.h+":";
-        document.getElementById("stopwatch-m").textContent=time.m+":";
-        document.getElementById("stopwatch-s").textContent=time.s;
-        document.getElementById("stopwatch-ms").textContent="."+time.ms;
+        $("#stopwatch-h").text(time.h+":");
+        $("#stopwatch-m").text(time.m+":");
+        $("#stopwatch-s").text(time.s);
+        $("#stopwatch-ms").text("."+time.ms);
     }
     function updateCountdown(){
         let remaining=endTime-performance.now();
         if (remaining<=0){
             clearInterval(countdownInterval);
-            document.getElementById("countdown-h").textContent="00:";
-            document.getElementById("countdown-m").textContent="00:";
-            document.getElementById("countdown-s").textContent="00";
-            document.getElementById("countdown-ms").textContent=".000";
+            $("#countdown-h").text("00:");
+            $("#countdown-m").text("00:");
+            $("#countdown-s").text("00");
+            $("#countdown-ms").text(".000");
             flashBackground();
             playOverspeedAlert();
-            document.title="Time is up";
+            $(document).prop("title", "Time is up");
             setTimeout(function (){
-                document.title="Time";
+                $(document).prop("title", "Time");
             }, 5000);
         }
         else{
             let time=formatTimeWithMs(remaining);
-            document.getElementById("countdown-h").textContent=time.h+":";
-            document.getElementById("countdown-m").textContent=time.m+":";
-            document.getElementById("countdown-s").textContent=time.s;
-            document.getElementById("countdown-ms").textContent="."+time.ms;
+            $("#countdown-h").text(time.h+":");
+            $("#countdown-m").text(time.m+":");
+            $("#countdown-s").text(time.s);
+            $("#countdown-ms").text("."+time.ms);
         }
     }
     function updateLocalTime(){
@@ -58,38 +58,38 @@ $(document).ready(function(){
         let minutes=currentTime.getMinutes();
         let seconds=currentTime.getSeconds();
         let ms=currentTime.getMilliseconds();
-        document.getElementById("time-h").textContent=formatTime(hours)+":";
-        document.getElementById("time-m").textContent=formatTime(minutes)+":";
-        document.getElementById("time-s").textContent=formatTime(seconds);
-        document.getElementById("time-ms").textContent="."+ms.toString().padStart(3, "0");
+        $("#time-h").text(formatTime(hours)+":");
+        $("#time-m").text(formatTime(minutes)+":");
+        $("#time-s").text(formatTime(seconds));
+        $("#time-ms").text("."+ms.toString().padStart(3, "0"));
         let offset=currentTime.getTimezoneOffset();
         let hoursOffset=Math.floor(Math.abs(offset)/60);
         let minutesOffset=Math.abs(offset)%60;
         let sign=offset>0?"-":"+";
         let timezoneStr=`(UTC${sign}${hoursOffset}${minutesOffset?":"+minutesOffset:""})`;
-        document.getElementById("time-zone").textContent=timezoneStr;
+        $("#time-zone").text(timezoneStr);
     }
-    document.getElementById("start-stopwatch").addEventListener("click", function (){
+    $("#start-stopwatch").on("click", function (){
         if (swRun){
             clearInterval(stopwatchInterval);
             startedTime=performance.now()-startTime;
-            this.textContent="START";
+            $(this).text("START");
         }
         else{
             startTime=performance.now()-startedTime;
             stopwatchInterval=setInterval(updateStopwatch, 10);
-            this.textContent="STOP";
+            $(this).text("STOP");
         }
         swRun=!swRun;
     });
-    document.getElementById("reset-stopwatch").addEventListener("click", function (){
+    $("#reset-stopwatch").on("click", function (){
         clearInterval(stopwatchInterval);
         startedTime=0;
-        document.getElementById("stopwatch-h").textContent="00:";
-        document.getElementById("stopwatch-m").textContent="00:";
-        document.getElementById("stopwatch-s").textContent="00";
-        document.getElementById("stopwatch-ms").textContent=".000";
-        document.getElementById("start-stopwatch").textContent="START";
+        $("#stopwatch-h").text("00:");
+        $("#stopwatch-m").text("00:");
+        $("#stopwatch-s").text("00");
+        $("#stopwatch-ms").text(".000");
+        $("#start-stopwatch").text("START");
         swRun=false;
     });
     function flashBackground(){
@@ -123,31 +123,31 @@ $(document).ready(function(){
             resumeAndPlay();
         }
     }
-    document.getElementById("timer-setter").addEventListener("click", function (){
+    $("#timer-setter").on("click", function (){
         clearInterval(countdownInterval);
-        if (!(document.getElementById("timer-hour").value.trim()==""&&document.getElementById("timer-minute").value.trim()==""&&document.getElementById("timer-seconds").value.trim()=="")){
-            let hours=parseInt(document.getElementById("timer-hour").value)||0;
-            let minutes=parseInt(document.getElementById("timer-minute").value)||0;
-            let seconds=parseInt(document.getElementById("timer-seconds").value)||0;
+        if (!($("#timer-hour").val().trim()==""&&$("#timer-minute").val().trim()==""&&$("#timer-seconds").val().trim()=="")){
+            let hours=parseInt($("#timer-hour").val())||0;
+            let minutes=parseInt($("#timer-minute").val())||0;
+            let seconds=parseInt($("#timer-seconds").val())||0;
             if (hours<0){
                 hours=0;
-                document.getElementById("timer-hour").value=0;
+                $("#timer-hour").val(0);
             }
             if (minutes<0){
                 minutes=0;
-                document.getElementById("timer-minute").value=0;
+                $("#timer-minute").val(0);
             }
             else if (minutes>59){
                 minutes=59;
-                document.getElementById("timer-minute").value=59;
+                $("#timer-minute").val(59);
             }
             if (seconds<0){
                 seconds=0;
-                document.getElementById("timer-seconds").value=0;
+                $("#timer-seconds").val(0);
             }
             else if (seconds>59){
                 seconds=59;
-                document.getElementById("timer-seconds").value=59;
+                $("#timer-seconds").val(59);
             }
             let duration=(hours*3600+minutes*60+seconds)*1000;
             endTime=performance.now()+duration;
@@ -157,10 +157,9 @@ $(document).ready(function(){
     });
     setInterval(updateLocalTime, 50);
     updateLocalTime();
-    document.addEventListener("contextmenu", (event)=>event.preventDefault());
-    document.addEventListener("keydown", function (event){
-        if (event.keyCode==123||(event.ctrlKey&&event.shiftKey&&event.keyCode==73)||
-            (event.ctrlKey&&event.shiftKey&&event.keyCode==74)||(event.ctrlKey&&event.keyCode==85)){
+    $(document).on("contextmenu", (event)=>event.preventDefault());
+    $(document).on("keydown", function (event){
+        if (event.keyCode==123||(event.ctrlKey&&event.shiftKey&&event.keyCode==73)||(event.ctrlKey&&event.shiftKey&&event.keyCode==74)||(event.ctrlKey&&event.keyCode==85)){
             event.preventDefault();
         }
     });
