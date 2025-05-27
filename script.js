@@ -5,6 +5,7 @@ $(document).ready(function(){
     let endTime;
     let countdownInterval;
     let audioCtx;
+    let startedTime=0;
     function formatTime(time){
         return time<10?"0"+time:time;
     }
@@ -71,10 +72,11 @@ $(document).ready(function(){
     document.getElementById("start-stopwatch").addEventListener("click", function (){
         if (swRun){
             clearInterval(stopwatchInterval);
+            startedTime=performance.now()-startTime;
             this.textContent="START";
         }
         else{
-            startTime=performance.now();
+            startTime=performance.now()-startedTime;
             stopwatchInterval=setInterval(updateStopwatch, 10);
             this.textContent="STOP";
         }
@@ -82,6 +84,7 @@ $(document).ready(function(){
     });
     document.getElementById("reset-stopwatch").addEventListener("click", function (){
         clearInterval(stopwatchInterval);
+        startedTime=0;
         document.getElementById("stopwatch-h").textContent="00:";
         document.getElementById("stopwatch-m").textContent="00:";
         document.getElementById("stopwatch-s").textContent="00";
@@ -122,33 +125,35 @@ $(document).ready(function(){
     }
     document.getElementById("timer-setter").addEventListener("click", function (){
         clearInterval(countdownInterval);
-        let hours=parseInt(document.getElementById("timer-hour").value)||0;
-        let minutes=parseInt(document.getElementById("timer-minute").value)||0;
-        let seconds=parseInt(document.getElementById("timer-seconds").value)||0;
-        if (hours<0){
-            hours=0;
-            document.getElementById("timer-hour").value=0;
+        if (!(document.getElementById("timer-hour").value.trim()==""&&document.getElementById("timer-minute").value.trim()==""&&document.getElementById("timer-seconds").value.trim()=="")){
+            let hours=parseInt(document.getElementById("timer-hour").value)||0;
+            let minutes=parseInt(document.getElementById("timer-minute").value)||0;
+            let seconds=parseInt(document.getElementById("timer-seconds").value)||0;
+            if (hours<0){
+                hours=0;
+                document.getElementById("timer-hour").value=0;
+            }
+            if (minutes<0){
+                minutes=0;
+                document.getElementById("timer-minute").value=0;
+            }
+            else if (minutes>59){
+                minutes=59;
+                document.getElementById("timer-minute").value=59;
+            }
+            if (seconds<0){
+                seconds=0;
+                document.getElementById("timer-seconds").value=0;
+            }
+            else if (seconds>59){
+                seconds=59;
+                document.getElementById("timer-seconds").value=59;
+            }
+            let duration=(hours*3600+minutes*60+seconds)*1000;
+            endTime=performance.now()+duration;
+            updateCountdown();
+            countdownInterval=setInterval(updateCountdown, 10);
         }
-        if (minutes<0){
-            minutes=0;
-            document.getElementById("timer-minute").value=0;
-        }
-        else if (minutes>59){
-            minutes=59;
-            document.getElementById("timer-minute").value=59;
-        }
-        if (seconds<0){
-            seconds=0;
-            document.getElementById("timer-seconds").value=0;
-        }
-        else if (seconds>59){
-            seconds=59;
-            document.getElementById("timer-seconds").value=59;
-        }
-        let duration=(hours*3600+minutes*60+seconds)*1000;
-        endTime=performance.now()+duration;
-        updateCountdown();
-        countdownInterval=setInterval(updateCountdown, 10);
     });
     setInterval(updateLocalTime, 50);
     updateLocalTime();
