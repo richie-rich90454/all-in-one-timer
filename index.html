@@ -2,12 +2,18 @@
 <html>
     <head>
         <title>Time</title>
+        <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" type="image/x-icon" href="favicon.png">
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@100..900&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
         <style>
             body{
-                font-family: "Noto Sans SC";
+                font-family: "Noto Sans", sans-serif;
                 margin: 0;
                 padding: 0;
                 background-color: #32A5E4;
@@ -17,7 +23,7 @@
                 min-height: 80vh;
             }
             input{
-                font-family: "Noto Sans SC";
+                font-family: "Noto Sans", sans-serif;
             }
             #main-title{
                 margin: auto;
@@ -36,7 +42,7 @@
                 min-height: 20vh;
                 width: 60%;
                 margin: 1rem auto;
-                font-size: 2.5vw;
+                font-size: 1.5vw;
                 text-align: center;
                 border-radius: .67rem;
             }
@@ -48,7 +54,7 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-                padding: 1rem;
+                padding: .5rem;
             }
             .time-input-boxes{
                 width: 100%;
@@ -59,7 +65,7 @@
                 border: 1px dashed #000;
             }
             button{
-                font-family: "Noto Sans SC";
+                font-family: "Noto Sans", sans-serif;
                 width: 100%;
                 font-size: 1rem;
                 padding: 0.2rem;
@@ -67,12 +73,28 @@
                 border-radius: 0.5rem;
                 border: 1px dashed #000;
                 cursor: pointer;
+                transition: transform 0.2s ease;
+                font-weight: bold;
             }
             button:hover{
-                transform: scaleY(1.5);
+                transform: scaleY(1.15);
             }
             h2{
                 text-align: center;
+            }
+            .flash{
+                animation: flash 1s infinite;
+            }
+            @keyframes flash{
+                0%{
+                    background-color: #DE0000;
+                }
+                50%{
+                    background-color: #F0F0F0;
+                }
+                100%{
+                    background-color: #DE0000;
+                }
             }
             @media (min-width: 768px){
                 .timer-component{
@@ -82,37 +104,21 @@
                     width: 30%;
                 }
                 .time-controls{
-                    flex-direction: row; justify-content: space-around;
+                    flex-direction: row;
+                    justify-content: space-around;
                 }
                 button{
                     width: 45%;
                 }
             }
+            span{
+                font-size: 4vw;
+                font-weight: bold;
+            }
         </style>
     </head>
     <body>
         <h1 id="main-title">All-in-one Timer Tool</h1>
-        <div class="main-portion">
-            <h2>Stopwatch</h2>
-            <div class="time-controls">
-                <button id="start-stopwatch">START</button>
-                <button id="reset-stopwatch">RESET</button>
-            </div>
-            <div class="timer-component" id="stopwatch-box">
-                <span id="stopwatch-h">00:</span>
-                <span id="stopwatch-m">00:</span>
-                <span id="stopwatch-s">00</span>
-            </div>
-        </div>
-        <div class="main-portion">
-            <h2>Current Time</h2>
-            <div class="timer-component" id="clock-box">
-                <span id="time-h">00:</span>
-                <span id="time-m">00:</span>
-                <span id="time-s">00</span>
-                <span id="time-zone">(UTC+0)</span>
-            </div>
-        </div>
         <div class="main-portion">
             <h2>Countdown</h2>
             <div class="time-controls">
@@ -125,6 +131,30 @@
                 <span id="countdown-h">00:</span>
                 <span id="countdown-m">00:</span>
                 <span id="countdown-s">00</span>
+                <span id="countdown-ms">.000</span>
+            </div>
+        </div>
+        <div class="main-portion">
+            <h2>Stopwatch</h2>
+            <div class="time-controls">
+                <button id="start-stopwatch">START</button>
+                <button id="reset-stopwatch">RESET</button>
+            </div>
+            <div class="timer-component" id="stopwatch-box">
+                <span id="stopwatch-h">00:</span>
+                <span id="stopwatch-m">00:</span>
+                <span id="stopwatch-s">00</span>
+                <span id="stopwatch-ms">.000</span>
+            </div>
+        </div>
+        <div class="main-portion">
+            <h2>Current Time</h2>
+            <div class="timer-component" id="clock-box">
+                <span id="time-h">00:</span>
+                <span id="time-m">00:</span>
+                <span id="time-s">00</span>
+                <span id="time-ms">.000</span>
+                <span id="time-zone">(UTC+0)</span>
             </div>
         </div>
         <script src="script.js"></script>

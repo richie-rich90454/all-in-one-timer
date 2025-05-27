@@ -1,127 +1,112 @@
-let swInterval, cdInterval;
 let swRun=false;
-let swH=0, swM=0, swS=0;
-let cdH=0, cdM=0, cdS=0;
-let stopwatchH=document.getElementById("stopwatch-h");
-let stopwatchM=document.getElementById("stopwatch-m");
-let stopwatchS=document.getElementById("stopwatch-s");
-let countdownH=document.getElementById("countdown-h");
-let countdownM=document.getElementById("countdown-m");
-let countdownS=document.getElementById("countdown-s");
-let flashInterval;
+let startTime;
+let stopwatchInterval;
+let endTime;
+let countdownInterval;
 let audioCtx;
 function formatTime(time){
-    if (time<10){
-        return "0"+time;
+    return time<10?"0"+time:time;
+}
+function formatTimeWithMs(totalMs){
+    let hours=Math.floor(totalMs/3600000);
+    let minutes=Math.floor((totalMs%3600000)/60000);
+    let seconds=Math.floor((totalMs%60000)/1000);
+    let ms=Math.floor(totalMs%1000);
+    return{
+        h: hours.toString().padStart(2, "0"),
+        m: minutes.toString().padStart(2, "0"),
+        s: seconds.toString().padStart(2, "0"),
+        ms: ms.toString().padStart(3, "0")
+    };
+}
+function updateStopwatch(){
+    let elapsed=performance.now()-startTime;
+    let time=formatTimeWithMs(elapsed);
+    document.getElementById("stopwatch-h").textContent=time.h+":";
+    document.getElementById("stopwatch-m").textContent=time.m+":";
+    document.getElementById("stopwatch-s").textContent=time.s;
+    document.getElementById("stopwatch-ms").textContent="."+time.ms;
+}
+function updateCountdown(){
+    let remaining=endTime-performance.now();
+    if (remaining<=0){
+        clearInterval(countdownInterval);
+        document.getElementById("countdown-h").textContent="00:";
+        document.getElementById("countdown-m").textContent="00:";
+        document.getElementById("countdown-s").textContent="00";
+        document.getElementById("countdown-ms").textContent=".000";
+        flashBackground();
+        playOverspeedAlert();
+        document.title="Time is up";
+        setTimeout(function (){
+            document.title="Time";
+        }, 5000);
     }
     else{
-        return time;
+        let time=formatTimeWithMs(remaining);
+        document.getElementById("countdown-h").textContent=time.h+":";
+        document.getElementById("countdown-m").textContent=time.m+":";
+        document.getElementById("countdown-s").textContent=time.s;
+        document.getElementById("countdown-ms").textContent="."+time.ms;
     }
-}
-function updateSWDisplay(){
-    stopwatchH.textContent=formatTime(swH)+":";
-    stopwatchM.textContent=formatTime(swM)+":";
-    stopwatchS.textContent=formatTime(swS);
-}
-function updateCDDisplay(){
-    countdownH.textContent=formatTime(cdH)+":";
-    countdownM.textContent=formatTime(cdM)+":";
-    countdownS.textContent=formatTime(cdS);
-}
-function countdown(){
-    if (cdS>0){
-        cdS--;
-    }
-    else if (cdM>0){
-        cdM--;
-        cdS=59;
-    }
-    else if (cdH>0){
-        cdH--;
-        cdM=59;
-        cdS=59;
-    }
-    if (cdH==0&&cdM==0&&cdS==0){
-        clearInterval(cdInterval);
-        flashBackground();
-        document.title="TIME IS UP";
-        setTimeout(function(){
-            document.title="Time";
-        },5000);
-    }
-    updateCDDisplay();
 }
 function updateLocalTime(){
     let currentTime=new Date();
-    document.getElementById("time-h").textContent=formatTime(currentTime.getHours())+":";
-    document.getElementById("time-m").textContent=formatTime(currentTime.getMinutes())+":";
-    document.getElementById("time-s").textContent=formatTime(currentTime.getSeconds());
-    if (currentTime.getTimezoneOffset()>0){
-        document.getElementById("time-zone").textContent=formatTime(` (UTC-${currentTime.getTimezoneOffset()/60})`);
-    }
-    else{
-        document.getElementById("time-zone").textContent=formatTime(` (UTC+${-currentTime.getTimezoneOffset()/60})`);
-    }
+    let hours=currentTime.getHours();
+    let minutes=currentTime.getMinutes();
+    let seconds=currentTime.getSeconds();
+    let ms=currentTime.getMilliseconds();
+    document.getElementById("time-h").textContent=formatTime(hours)+":";
+    document.getElementById("time-m").textContent=formatTime(minutes)+":";
+    document.getElementById("time-s").textContent=formatTime(seconds);
+    document.getElementById("time-ms").textContent="."+ms.toString().padStart(3, "0");
+    let offset=currentTime.getTimezoneOffset();
+    let hoursOffset=Math.floor(Math.abs(offset)/60);
+    let minutesOffset=Math.abs(offset)%60;
+    let sign=offset>0?"-":"+";
+    let timezoneStr=`(UTC${sign}${hoursOffset}${minutesOffset?":"+minutesOffset:""})`;
+    document.getElementById("time-zone").textContent=timezoneStr;
 }
-document.getElementById("start-stopwatch").addEventListener("click", function(){
+
+document.getElementById("start-stopwatch").addEventListener("click", function (){
     if (swRun){
-        clearInterval(swInterval);
+        clearInterval(stopwatchInterval);
         this.textContent="START STOPWATCH";
     }
     else{
-        swInterval=setInterval(function(){
-            swS++;
-            if (swS==60){
-                swS=0;
-                swM++;
-            }
-            if (swM==60){
-                swM=0;
-                swH++;
-            }
-            updateSWDisplay();
-        },1000);
+        startTime=performance.now();
+        stopwatchInterval=setInterval(updateStopwatch, 10);
         this.textContent="STOP STOPWATCH";
     }
     swRun=!swRun;
 });
-document.getElementById("reset-stopwatch").addEventListener("click", function(){
-    clearInterval(swInterval);
-    swH=0;
-    swM=0;
-    swS=0;
-    updateSWDisplay();
+document.getElementById("reset-stopwatch").addEventListener("click", function (){
+    clearInterval(stopwatchInterval);
+    document.getElementById("stopwatch-h").textContent="00:";
+    document.getElementById("stopwatch-m").textContent="00:";
+    document.getElementById("stopwatch-s").textContent="00";
+    document.getElementById("stopwatch-ms").textContent=".000";
     document.getElementById("start-stopwatch").textContent="START STOPWATCH";
     swRun=false;
 });
 function flashBackground(){
-    let cdBox=document.getElementById("countdown-box");
-    let flashing=true;
-    setTimeout(playOverspeedAlert,500);
-    flashInterval=setInterval(function(){
-        if (flashing){
-            cdBox.style.backgroundColor="#DE0000";
-        }
-        else{
-            cdBox.style.backgroundColor="#F0F0F0";
-        }
-        flashing=!flashing;
-    },500);
-    setTimeout(function(){
-        clearInterval(flashInterval);
-        cdBox.style.backgroundColor="#F0F0F0";
-    },5000);
+    let cdBox=$("#countdown-box");
+    cdBox.addClass("flash");
+    cdBox.effect("shake",{times: 3}, 1000);
+    setTimeout(function (){
+        cdBox.removeClass("flash");
+    }, 5000);
 }
 function playOverspeedAlert(){
     if (!audioCtx){
-        audioCtx=new (window.AudioContext||window.webkitAudioContext);
+        audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     }
-    const resumeAndPlay=()=>{
-        const now=audioCtx.currentTime;
+    let resumeAndPlay=()=>{
+        let now=audioCtx.currentTime;
         for (let i=0;i<5;i++){
-            const oscillator=audioCtx.createOscillator();
+            let oscillator=audioCtx.createOscillator();
             oscillator.type="square";
-            oscillator.frequency.setValueAtTime(i%2==0?880:660,now+i);
+            oscillator.frequency.setValueAtTime(i%2==0?880:660, now+i);
             oscillator.connect(audioCtx.destination);
             oscillator.start(now+i);
             oscillator.stop(now+i+0.6);
@@ -134,17 +119,8 @@ function playOverspeedAlert(){
         resumeAndPlay();
     }
 }
-function parseHMS(seconds){
-    let h=Math.floor(seconds/3600);
-    let m=Math.floor((seconds%3600)/60);
-    let s=seconds%60;
-    return{h,m,s}
-}
-document.getElementById("timer-setter").addEventListener("click",function(){
-    if (!audioCtx){
-        audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    }
-    clearInterval(flashInterval);
+document.getElementById("timer-setter").addEventListener("click", function (){
+    clearInterval(countdownInterval);
     let hours=parseInt(document.getElementById("stopwatch-hour").value)||0;
     let minutes=parseInt(document.getElementById("stopwatch-minute").value)||0;
     let seconds=parseInt(document.getElementById("stopwatch-seconds").value)||0;
@@ -154,25 +130,31 @@ document.getElementById("timer-setter").addEventListener("click",function(){
     }
     if (minutes<0){
         minutes=0;
-        document.getElementById("stopwatch-minutes").value=0;
+        document.getElementById("stopwatch-minute").value=0;
+    }
+    else if (minutes>59){
+        minutes=59;
+        document.getElementById("stopwatch-minute").value=59;
     }
     if (seconds<0){
         seconds=0;
         document.getElementById("stopwatch-seconds").value=0;
     }
-    let parsedTime=parseHMS(hours*3600+minutes*60+seconds);
-    cdH=parsedTime.h;
-    cdM=parsedTime.m;
-    cdS=parsedTime.s;
-    updateCDDisplay();
-    clearInterval(cdInterval);
-    cdInterval=setInterval(countdown,1000);
+    else if (seconds>59){
+        seconds=59;
+        document.getElementById("stopwatch-seconds").value=59;
+    }
+    let duration=(hours*3600+minutes*60+seconds)*1000;
+    endTime=performance.now()+duration;
+    updateCountdown();
+    countdownInterval=setInterval(updateCountdown, 10);
 });
-setInterval(updateLocalTime, 1000);
+setInterval(updateLocalTime, 50);
 updateLocalTime();
 document.addEventListener("contextmenu", (event)=>event.preventDefault());
-document.addEventListener("keydown", function(event){
-    if (event.keyCode==123||(event.ctrlKey && event.shiftKey && event.keyCode==73)||(event.ctrlKey && event.shiftKey && event.keyCode==74)||(event.ctrlKey && event.keyCode==85)){
+document.addEventListener("keydown", function (event){
+    if (event.keyCode==123||(event.ctrlKey&&event.shiftKey&&event.keyCode==73) ||
+        (event.ctrlKey&&event.shiftKey&&event.keyCode==74)||(event.ctrlKey&&event.keyCode==85)){
         event.preventDefault();
     }
 });
