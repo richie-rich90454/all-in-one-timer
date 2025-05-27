@@ -8,9 +8,27 @@
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+        <script>
+            function loadjQuery(){
+                let script=document.createElement("script");
+                script.src="/jquery-3.7.1.min.js";
+                document.head.appendChild(script);
+            }
+            function loadjQueryUIJS(){
+                let script=document.createElement("script");
+                script.src="/jquery-ui.min.js";
+                document.head.appendChild(script);
+            }
+            function loadjQueryUICSS(){
+                let link=document.createElement("link");
+                link.rel="stylesheet";
+                link.href="/jquery-ui.css";
+                document.head.appendChild(link);
+            }
+        </script>
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js" onerror="loadjQuery()"></script>
+        <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" onerror="loadjQueryUIJS()"></script>
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" onerror="loadjQueryUICSS()">
         <style>
             body{
                 font-family: "Noto Sans", sans-serif;
