@@ -42,7 +42,7 @@
                 min-height: 20vh;
                 width: 60%;
                 margin: 1rem auto;
-                font-size: 1.5vw;
+                font-size: 2rem;
                 text-align: center;
                 border-radius: .67rem;
             }
@@ -87,13 +87,13 @@
             }
             @keyframes flash{
                 0%{
-                    background-color: #DE0000;
-                }
-                50%{
                     background-color: #F0F0F0;
                 }
-                100%{
+                50%{
                     background-color: #DE0000;
+                }
+                100%{
+                    background-color: #F0F0F0;
                 }
             }
             @media (min-width: 768px){
@@ -110,6 +110,9 @@
                 button{
                     width: 45%;
                 }
+                span{
+                    font-size: inherit;
+                }
             }
             span{
                 font-size: 4vw;
@@ -122,9 +125,9 @@
         <div class="main-portion">
             <h2>Countdown</h2>
             <div class="time-controls">
-                <input type="number" id="stopwatch-hour" class="time-input-boxes" min="0" placeholder="Hours">
-                <input type="number" id="stopwatch-minute" class="time-input-boxes" min="0" max="59" placeholder="Minutes">
-                <input type="number" id="stopwatch-seconds" class="time-input-boxes" min="0" max="59" placeholder="Seconds">
+                <input type="number" id="timer-hour" class="time-input-boxes" min="0" placeholder="Hours">
+                <input type="number" id="timer-minute" class="time-input-boxes" min="0" max="59" placeholder="Minutes">
+                <input type="number" id="timer-seconds" class="time-input-boxes" min="0" max="59" placeholder="Seconds">
                 <button id="timer-setter">Set Countdown</button>
             </div>
             <div class="timer-component" id="countdown-box">

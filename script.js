@@ -68,16 +68,15 @@ $(document).ready(function(){
         let timezoneStr=`(UTC${sign}${hoursOffset}${minutesOffset?":"+minutesOffset:""})`;
         document.getElementById("time-zone").textContent=timezoneStr;
     }
-
     document.getElementById("start-stopwatch").addEventListener("click", function (){
         if (swRun){
             clearInterval(stopwatchInterval);
-            this.textContent="START STOPWATCH";
+            this.textContent="START";
         }
         else{
             startTime=performance.now();
             stopwatchInterval=setInterval(updateStopwatch, 10);
-            this.textContent="STOP STOPWATCH";
+            this.textContent="STOP";
         }
         swRun=!swRun;
     });
@@ -87,7 +86,7 @@ $(document).ready(function(){
         document.getElementById("stopwatch-m").textContent="00:";
         document.getElementById("stopwatch-s").textContent="00";
         document.getElementById("stopwatch-ms").textContent=".000";
-        document.getElementById("start-stopwatch").textContent="START STOPWATCH";
+        document.getElementById("start-stopwatch").textContent="START";
         swRun=false;
     });
     function flashBackground(){
@@ -111,6 +110,7 @@ $(document).ready(function(){
                 oscillator.connect(audioCtx.destination);
                 oscillator.start(now+i);
                 oscillator.stop(now+i+0.6);
+                oscillator.onended=()=>oscillator.disconnect();
             }
         };
         if (audioCtx.state=="suspended"){
@@ -122,28 +122,28 @@ $(document).ready(function(){
     }
     document.getElementById("timer-setter").addEventListener("click", function (){
         clearInterval(countdownInterval);
-        let hours=parseInt(document.getElementById("stopwatch-hour").value)||0;
-        let minutes=parseInt(document.getElementById("stopwatch-minute").value)||0;
-        let seconds=parseInt(document.getElementById("stopwatch-seconds").value)||0;
+        let hours=parseInt(document.getElementById("timer-hour").value)||0;
+        let minutes=parseInt(document.getElementById("timer-minute").value)||0;
+        let seconds=parseInt(document.getElementById("timer-seconds").value)||0;
         if (hours<0){
             hours=0;
-            document.getElementById("stopwatch-hour").value=0;
+            document.getElementById("timer-hour").value=0;
         }
         if (minutes<0){
             minutes=0;
-            document.getElementById("stopwatch-minute").value=0;
+            document.getElementById("timer-minute").value=0;
         }
         else if (minutes>59){
             minutes=59;
-            document.getElementById("stopwatch-minute").value=59;
+            document.getElementById("timer-minute").value=59;
         }
         if (seconds<0){
             seconds=0;
-            document.getElementById("stopwatch-seconds").value=0;
+            document.getElementById("timer-seconds").value=0;
         }
         else if (seconds>59){
             seconds=59;
-            document.getElementById("stopwatch-seconds").value=59;
+            document.getElementById("timer-seconds").value=59;
         }
         let duration=(hours*3600+minutes*60+seconds)*1000;
         endTime=performance.now()+duration;
