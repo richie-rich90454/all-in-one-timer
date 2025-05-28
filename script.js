@@ -101,26 +101,30 @@ $(document).ready(function(){
         }, 5000);
     }
     function playOverspeedAlert(){
-        if (!audioCtx){
-            audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-        }
-        let resumeAndPlay=()=>{
+        let audioCtx=window.audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+        window.audioCtx=audioCtx;
+        let playToneSequence=()=>{
             let now=audioCtx.currentTime;
-            for (let i=0;i<5;i++){
+            let toneCount=12;
+            let toneDuration=.3;
+            let spacing=.45;
+            for (let i=0;i<toneCount;i++){
                 let oscillator=audioCtx.createOscillator();
-                oscillator.type="square";
-                oscillator.frequency.setValueAtTime(i%2==0?880:660, now+i);
+                oscillator.type="sine";
+                oscillator.frequency.setValueAtTime(432, now+i*spacing);
                 oscillator.connect(audioCtx.destination);
-                oscillator.start(now+i);
-                oscillator.stop(now+i+0.6);
+                oscillator.start(now+i*spacing);
+                oscillator.stop(now+i*spacing+toneDuration);
                 oscillator.onended=()=>oscillator.disconnect();
             }
         };
         if (audioCtx.state=="suspended"){
-            audioCtx.resume().then(resumeAndPlay);
+            audioCtx.resume().then(playToneSequence).catch(error=>{
+                console.error("Failed to resume AudioContext:", error);
+            });
         }
         else{
-            resumeAndPlay();
+            playToneSequence();
         }
     }
     $("#timer-setter").on("click", function (){
