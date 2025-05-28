@@ -105,17 +105,23 @@ $(document).ready(function(){
         window.audioCtx=audioCtx;
         let playToneSequence=()=>{
             let now=audioCtx.currentTime;
-            let toneCount=15;
+            let toneCount=10;
             let toneDuration=.2;
-            let spacing=.25;
+            let spacing=.35;
             for (let i=0;i<toneCount;i++){
                 let oscillator=audioCtx.createOscillator();
-                oscillator.type="sine";
-                oscillator.frequency.setValueAtTime(428, now+i*spacing);
-                oscillator.connect(audioCtx.destination);
+                let gainNode=audioCtx.createGain();
+                oscillator.type="square";
+                oscillator.frequency.setValueAtTime(420, now+i*spacing);
+                gainNode.gain.setValueAtTime(.4, now+i*spacing);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
                 oscillator.start(now+i*spacing);
                 oscillator.stop(now+i*spacing+toneDuration);
-                oscillator.onended=()=>oscillator.disconnect();
+                oscillator.onended=()=>{
+                    oscillator.disconnect();
+                    gainNode.disconnect();
+                };
             }
         };
         if (audioCtx.state=="suspended"){
