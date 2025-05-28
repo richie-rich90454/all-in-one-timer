@@ -105,13 +105,13 @@ $(document).ready(function(){
         window.audioCtx=audioCtx;
         let playToneSequence=()=>{
             let now=audioCtx.currentTime;
-            let toneCount=12;
-            let toneDuration=.3;
-            let spacing=.45;
+            let toneCount=15;
+            let toneDuration=.2;
+            let spacing=.25;
             for (let i=0;i<toneCount;i++){
                 let oscillator=audioCtx.createOscillator();
                 oscillator.type="sine";
-                oscillator.frequency.setValueAtTime(432, now+i*spacing);
+                oscillator.frequency.setValueAtTime(428, now+i*spacing);
                 oscillator.connect(audioCtx.destination);
                 oscillator.start(now+i*spacing);
                 oscillator.stop(now+i*spacing+toneDuration);
