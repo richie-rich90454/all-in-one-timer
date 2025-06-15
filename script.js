@@ -105,22 +105,33 @@ $(document).ready(function(){
         window.audioCtx=audioCtx;
         let playToneSequence=()=>{
             let now=audioCtx.currentTime;
-            let toneCount=10;
-            let toneDuration=.2;
-            let spacing=.35;
+            let toneCount=15;
+            let toneDuration=.1;
+            let spacing=.2;
             for (let i=0;i<toneCount;i++){
-                let oscillator=audioCtx.createOscillator();
-                let gainNode=audioCtx.createGain();
-                oscillator.type="square";
-                oscillator.frequency.setValueAtTime(420, now+i*spacing);
-                gainNode.gain.setValueAtTime(.4, now+i*spacing);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
-                oscillator.start(now+i*spacing);
-                oscillator.stop(now+i*spacing+toneDuration);
-                oscillator.onended=()=>{
-                    oscillator.disconnect();
-                    gainNode.disconnect();
+                let oscillator1=audioCtx.createOscillator();
+                let gainNode1=audioCtx.createGain();
+                oscillator1.type="square";
+                oscillator1.frequency.setValueAtTime(420, now+i*spacing);
+                gainNode1.gain.setValueAtTime(.3, now+i*spacing);
+                oscillator1.connect(gainNode1);
+                gainNode1.connect(audioCtx.destination);
+                oscillator1.start(now+i*spacing);
+                oscillator1.stop(now+i*spacing+toneDuration);
+                let oscillator2=audioCtx.createOscillator();
+                let gainNode2=audioCtx.createGain();
+                oscillator2.type="sine";
+                oscillator2.frequency.setValueAtTime(840, now+i*spacing);
+                gainNode2.gain.setValueAtTime(.1, now+i*spacing);
+                oscillator2.connect(gainNode2);
+                gainNode2.connect(audioCtx.destination);
+                oscillator2.start(now+i*spacing);
+                oscillator2.stop(now+i*spacing+toneDuration);
+                oscillator1.onended=()=>{
+                    oscillator1.disconnect();
+                    gainNode1.disconnect();
+                    oscillator2.disconnect();
+                    gainNode2.disconnect();
                 };
             }
         };

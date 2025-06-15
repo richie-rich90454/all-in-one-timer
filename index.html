@@ -7,7 +7,6 @@
         <link rel="icon" type="image/x-icon" href="favicon.png">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
         <script>
             function loadjQuery(){
                 let script=document.createElement("script");
@@ -30,6 +29,12 @@
         <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js" onerror="loadjQueryUIJS()"></script>
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" onerror="loadjQueryUICSS()">
         <style>
+            @font-face{
+                font-family: "Noto Sans";
+                src: url("NotoSans-VariableFont_wdth_wght.ttf") format("truetype");
+                font-display: swap;
+                font-weight: 1 1000;
+            }
             body{
                 font-family: "Noto Sans", sans-serif;
                 margin: 0;
