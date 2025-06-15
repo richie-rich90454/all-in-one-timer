@@ -2,6 +2,7 @@ import javax.swing.*;
 import javax.sound.sampled.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -29,12 +30,14 @@ public class AllInOneTimer extends JFrame{
     private static final Color ALERT_COLOR=Color.decode("#DE0000");
     private static final Color BUTTON_BACKGROUND=Color.decode("#DE0000");
     private static final Color BUTTON_TEXT=Color.WHITE;
-    private static final Font LABEL_FONT=new Font("Noto Sans", Font.BOLD, 24);
-    private static final Font BUTTON_FONT=new Font("Noto Sans", Font.BOLD, 14);
-    private static final Font TEXT_FONT=new Font("Noto Sans", Font.PLAIN, 14);
+    private static  Font LABEL_FONT=new Font("Noto Sans", Font.BOLD, 24);
+    private static  Font BUTTON_FONT=new Font("Noto Sans", Font.BOLD, 14);
+    private static  Font TEXT_FONT=new Font("Noto Sans", Font.PLAIN, 14);
     private static final Cursor HAND_CURSOR=new Cursor(Cursor.HAND_CURSOR);
     public AllInOneTimer(){
         super("All-in-one Timer Tool");
+        Image icon=Toolkit.getDefaultToolkit().getImage(getClass().getResource("/favicon.png"));
+        setIconImage(icon);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         setBackground(PRIMARY_COLOR);
@@ -52,13 +55,20 @@ public class AllInOneTimer extends JFrame{
     private void loadCustomFont(){
         try{
             InputStream is=getClass().getResourceAsStream("/NotoSans-VariableFont_wdth_wght.ttf");
-            Font font=Font.createFont(Font.TRUETYPE_FONT, is);
-            GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
-            ge.registerFont(font);
-            setFont(TEXT_FONT);
+            if (is!=null){
+                Font font=Font.createFont(Font.TRUETYPE_FONT, is);
+                GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
+                ge.registerFont(font);
+            }
+            else{
+                throw new IOException("Font file not found in resources");
+            }
         }
         catch (Exception e){
-
+            System.err.println("Error loading font: "+e.getMessage());
+            TEXT_FONT=new Font(Font.SANS_SERIF, Font.PLAIN, 14);
+            LABEL_FONT=new Font(Font.SANS_SERIF, Font.BOLD, 24);
+            BUTTON_FONT=new Font(Font.SANS_SERIF, Font.BOLD, 14);
         }
     }
     private void initCountdownPanel(){
