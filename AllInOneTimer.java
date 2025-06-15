@@ -247,13 +247,9 @@ public class AllInOneTimer extends JFrame{
     private void triggerAlarm(){
         flashOn=false;
         flashTimer=new Timer(300, new ActionListener(){
-            private int cnt=0;
             public void actionPerformed(ActionEvent e){
                 countdownBox.setBackground(flashOn?BACKGROUND_COLOR:ALERT_COLOR);
                 flashOn=!flashOn;
-                if (++cnt>=10){
-                    flashTimer.stop();
-                }
             }
         });
         flashTimer.start();
@@ -274,8 +270,13 @@ public class AllInOneTimer extends JFrame{
             public void run(){
                 try{
                     playAlertSequence();
-                }
-                catch (Exception ex){
+                    SwingUtilities.invokeLater(new Runnable(){
+                        public void run(){
+                            flashTimer.stop();
+                            countdownBox.setBackground(BACKGROUND_COLOR);
+                        }
+                    });
+                } catch (Exception ex){
                     ex.printStackTrace();
                 }
             }
