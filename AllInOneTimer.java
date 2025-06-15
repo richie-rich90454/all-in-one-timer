@@ -80,12 +80,17 @@ public class AllInOneTimer extends JFrame{
         JButton setBtn=styledButton("Set Countdown");
         setBtn.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
+                if (countdownTimer!=null&&countdownTimer.isRunning()){
+                    countdownTimer.stop();
+                }
                 int h=(Integer) hourSpinner.getValue();
                 int m=(Integer) minSpinner.getValue();
                 int s=(Integer) secSpinner.getValue();
                 long duration=((long) h*3600+m*60+s)*1000;
-                countdownEndMs=System.currentTimeMillis()+duration;
-                countdownTimer.start();
+                if (duration>0){
+                    countdownEndMs=System.currentTimeMillis()+duration;
+                    countdownTimer.start();
+                }
             }
         });
         controls.add(hourLabel);
@@ -231,7 +236,7 @@ public class AllInOneTimer extends JFrame{
     }
     private void triggerAlarm(){
         flashOn=false;
-        flashTimer=new Timer(500, new ActionListener(){
+        flashTimer=new Timer(300, new ActionListener(){
             private int cnt=0;
             public void actionPerformed(ActionEvent e){
                 countdownBox.setBackground(flashOn?BACKGROUND_COLOR:ALERT_COLOR);
@@ -307,6 +312,7 @@ public class AllInOneTimer extends JFrame{
         JSpinner sp=new JSpinner(new SpinnerNumberModel(val, min, max, 1));
         sp.setPreferredSize(new Dimension(50, 24));
         sp.setFont(TEXT_FONT);
+        sp.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 0, 0, 70), 1, true), BorderFactory.createEmptyBorder(2, 5, 2, 5)));
         return sp;
     }
     private JLabel timerLabel(String txt){
@@ -319,7 +325,7 @@ public class AllInOneTimer extends JFrame{
         btn.setFont(BUTTON_FONT);
         btn.setBackground(BUTTON_BACKGROUND);
         btn.setForeground(BUTTON_TEXT);
-        btn.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 0, 0, 70)), BorderFactory.createEmptyBorder(5, 10, 5, 10)));
+        btn.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0, 0, 0, 70), 1, true), BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         btn.setFocusPainted(false);
         btn.setCursor(HAND_CURSOR);
         btn.addMouseListener(new MouseAdapter(){
