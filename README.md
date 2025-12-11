@@ -1,8 +1,8 @@
 # All-in-One Timer Tool
 A lightweight, responsive web timer suite that includes:
-1. **Stopwatch** – Live stopwatch with start, stop, and reset.
-2. **Countdown Timer** – Custom countdown with flash and alert.
-3. **Current Time Display** – Local time with UTC offset.
+1. **Stopwatch** - Live stopwatch with start, stop, and reset.
+2. **Countdown Timer** - Custom countdown with flash and alert.
+3. **Current Time Display** - Local time with UTC offset.
 Served with a no-cache Fastify server. Just run `node server.js` and go!
 ---
 ## Features
@@ -16,7 +16,7 @@ Served with a no-cache Fastify server. Just run `node server.js` and go!
 * Title change on completion
 ### Current Time
 * Updates every 50ms
-* Displays `(UTC±offset)` from user’s local timezone
+* Displays `(UTC+ or -offset)` from user's local timezone
 ### Tech Stack
 * HTML/CSS/JavaScript (vanilla + jQuery)
 * Web Audio API for sound alert
@@ -65,10 +65,10 @@ node server.js
 ---
 ## Credits
 * **Developer**: [@richie-rich90454](https://github.com/richie-rich90454)
-* **Font**: Google Fonts – Noto Sans
+* **Font**: Google Fonts - Noto Sans
 * **Audio**: Web Audio API
 * **Framework**: Fastify + @fastify/static
 * **Sites**: [richardsblogs.com](https://www.richardsblogs.com), [biszweb.club](https://www.biszweb.club)
 ---
 ## License
-Apache-2.0 License – See [LICENSE](./LICENSE) for details.
+Apache-2.0 License - See [LICENSE](./LICENSE) for details.
