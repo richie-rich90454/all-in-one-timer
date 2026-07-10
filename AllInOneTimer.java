@@ -214,7 +214,7 @@ public class AllInOneTimer extends JFrame{
     private static Font LABEL_FONT=new Font("Noto Sans", Font.BOLD, 24);
     private static Font BUTTON_FONT=new Font("Noto Sans", Font.BOLD, 14);
     private static Font TEXT_FONT=new Font("Noto Sans", Font.PLAIN, 14);
-    private static final Cursor HAND_CURSOR=new Cursor(Cursor.HAND_CURSOR);
+    private static final Cursor HAND_CURSOR=Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
     private static final String[] PAD2=new String[100];
     private static final String[] PAD2_COLON=new String[100];
     private static final String[] PAD3_MS=new String[1000];

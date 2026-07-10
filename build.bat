@@ -2,7 +2,7 @@
 setlocal
 del *.class /Q
 del TimerApp.jar /Q
-javac -source 8 -target 8 AllInOneTimer.java
+javac --release 8 AllInOneTimer.java
 if errorlevel 1 (
     echo Compilation failed!
     exit /b 1
