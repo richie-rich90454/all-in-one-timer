@@ -24,15 +24,17 @@ public class AllInOneTimer extends JFrame{
     private Point origLocation;
     private Timer shakeTimer;
     private int shakeCount;
+    private Timer titleResetTimer;
+    private Thread alarmSoundThread;
     private static final Color PRIMARY_COLOR=Color.decode("#32A5E4");
     private static final Color SECONDARY_COLOR=Color.decode("#1C94E9");
     private static final Color BACKGROUND_COLOR=Color.WHITE;
     private static final Color ALERT_COLOR=Color.decode("#DE0000");
     private static final Color BUTTON_BACKGROUND=Color.decode("#DE0000");
     private static final Color BUTTON_TEXT=Color.WHITE;
-    private static  Font LABEL_FONT=new Font("Noto Sans", Font.BOLD, 24);
-    private static  Font BUTTON_FONT=new Font("Noto Sans", Font.BOLD, 14);
-    private static  Font TEXT_FONT=new Font("Noto Sans", Font.PLAIN, 14);
+    private static Font LABEL_FONT=new Font("Noto Sans", Font.BOLD, 24);
+    private static Font BUTTON_FONT=new Font("Noto Sans", Font.BOLD, 14);
+    private static Font TEXT_FONT=new Font("Noto Sans", Font.PLAIN, 14);
     private static final Cursor HAND_CURSOR=new Cursor(Cursor.HAND_CURSOR);
     public AllInOneTimer(){
         super("All-in-one Timer Tool");
@@ -90,6 +92,7 @@ public class AllInOneTimer extends JFrame{
         JButton setBtn=styledButton("Set Countdown");
         setBtn.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
+                cancelAlarm();
                 if (countdownTimer!=null&&countdownTimer.isRunning()){
                     countdownTimer.stop();
                 }
@@ -103,6 +106,15 @@ public class AllInOneTimer extends JFrame{
                 }
             }
         });
+        JButton stopBtn=styledButton("Stop");
+        stopBtn.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                cancelAlarm();
+                if (countdownTimer!=null&&countdownTimer.isRunning()){
+                    countdownTimer.stop();
+                }
+            }
+        });
         controls.add(hourLabel);
         controls.add(hourSpinner);
         controls.add(minLabel);
@@ -110,6 +122,7 @@ public class AllInOneTimer extends JFrame{
         controls.add(secLabel);
         controls.add(secSpinner);
         controls.add(setBtn);
+        controls.add(stopBtn);
         panel.add(controls, BorderLayout.NORTH);
         countdownBox=styledBox();
         cdHour=timerLabel("00:");
@@ -237,14 +250,34 @@ public class AllInOneTimer extends JFrame{
                 timeSec.setText(pad(s, 2));
                 timeMs.setText("."+pad(ms, 3));
                 TimeZone tz=cal.getTimeZone();
-                int off=tz.getRawOffset()/3600000;
+                int off=tz.getOffset(cal.getTimeInMillis())/3600000;
                 String sg=(off>=0)?"+":"";
                 timeZone.setText("(UTC"+sg+off+")");
             }
         });
         clockTimer.start();
     }
+    private void cancelAlarm(){
+        if (flashTimer!=null&&flashTimer.isRunning()){
+            flashTimer.stop();
+        }
+        if (shakeTimer!=null&&shakeTimer.isRunning()){
+            shakeTimer.stop();
+            if (origLocation!=null){
+                setLocation(origLocation);
+            }
+        }
+        if (titleResetTimer!=null&&titleResetTimer.isRunning()){
+            titleResetTimer.stop();
+        }
+        countdownBox.setBackground(BACKGROUND_COLOR);
+        setTitle("All-in-one Timer Tool");
+        if (alarmSoundThread!=null&&alarmSoundThread.isAlive()){
+            alarmSoundThread.interrupt();
+        }
+    }
     private void triggerAlarm(){
+        cancelAlarm();
         flashOn=false;
         flashTimer=new Timer(300, new ActionListener(){
             public void actionPerformed(ActionEvent e){
@@ -266,31 +299,40 @@ public class AllInOneTimer extends JFrame{
             }
         });
         shakeTimer.start();
-        new Thread(new Runnable(){
+        alarmSoundThread=new Thread(new Runnable(){
             public void run(){
                 try{
                     playAlertSequence();
                     SwingUtilities.invokeLater(new Runnable(){
                         public void run(){
-                            flashTimer.stop();
+                            if (flashTimer!=null&&flashTimer.isRunning()){
+                                flashTimer.stop();
+                            }
                             countdownBox.setBackground(BACKGROUND_COLOR);
                         }
                     });
-                } catch (Exception ex){
+                }
+                catch (Exception ex){
                     ex.printStackTrace();
                 }
             }
-        }).start();
+        });
+        alarmSoundThread.start();
         setTitle("TIME IS UP");
-        new Timer(5000, new ActionListener(){
+        titleResetTimer=new Timer(5000, new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 setTitle("All-in-one Timer Tool");
             }
-        }).start();
+        });
+        titleResetTimer.setRepeats(false);
+        titleResetTimer.start();
     }
     private void playAlertSequence() throws Exception{
         float sr=44100f;
         for (int i=0;i<15;i++){
+            if (Thread.currentThread().isInterrupted()){
+                throw new InterruptedException();
+            }
             playTone(420, 100, sr, true, 0.3f);
             playTone(840, 100, sr, false, 0.1f);
             Thread.sleep(100);
@@ -344,47 +386,19 @@ public class AllInOneTimer extends JFrame{
             private Color hoverColor=BUTTON_BACKGROUND.darker();
             private Color pressedColor=BUTTON_BACKGROUND.brighter();
             public void mouseEntered(MouseEvent e){
-                animateBackground(btn, originalBg, hoverColor, 200);
+                btn.setBackground(hoverColor);
             }
             public void mouseExited(MouseEvent e){
-                animateBackground(btn, btn.getBackground(), originalBg, 200);
+                btn.setBackground(originalBg);
             }
             public void mousePressed(MouseEvent e){
-                animateBackground(btn, btn.getBackground(), pressedColor, 100);
+                btn.setBackground(pressedColor);
             }
             public void mouseReleased(MouseEvent e){
-                animateBackground(btn, btn.getBackground(), hoverColor, 100);
+                btn.setBackground(hoverColor);
             }
         });
         return btn;
-    }
-    private void animateBackground(final JComponent component, final Color from, final Color to, final int duration){
-        new Thread(new Runnable(){
-            public void run(){
-                try{
-                    final long startTime=System.currentTimeMillis();
-                    while (System.currentTimeMillis()-startTime<duration){
-                        float progress=(float) (System.currentTimeMillis()-startTime)/duration;
-                        if (progress>1){
-                            progress=1;
-                        }
-                        final int red=(int) (from.getRed()+(to.getRed()-from.getRed())*progress);
-                        final int green=(int) (from.getGreen()+(to.getGreen()-from.getGreen())*progress);
-                        final int blue=(int) (from.getBlue()+(to.getBlue()-from.getBlue())*progress);
-                        final Color intermediate=new Color(red, green, blue);
-                        SwingUtilities.invokeLater(new Runnable(){
-                            public void run(){
-                                component.setBackground(intermediate);
-                            }
-                        });
-                        Thread.sleep(10);
-                    }
-                }
-                catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        }).start();
     }
     private JPanel styledPanel(String title){
         JPanel p=new JPanel(new BorderLayout());
