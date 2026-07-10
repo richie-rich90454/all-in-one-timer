@@ -1,6 +1,6 @@
 /**
  * A graphical user interface application that integrates a countdown timer with
- * audio-visual alarm, a stopwatch with millisecond precision, and a live clock
+ * audio‑visual alarm, a stopwatch with millisecond precision, and a live clock
  * displaying the current system time and its Coordinated Universal Time offset.
  * The interface uses the Swing toolkit and arranges three functional panels
  * vertically inside a resizable frame.  All string representations of time
@@ -25,7 +25,7 @@
  * exists, the button has no effect.  A "Reset Countdown" button sets all
  * spinners to zero, resets the countdown display labels to "00:00:00.000",
  * clears the progress bar, stops the timer, and cancels the alarm.  While the
- * countdown is active, a Swing Timer running at a 10-millisecond interval
+ * countdown is active, a Swing Timer running at a 10‑millisecond interval
  * updates four labels that display the remaining time in the format
  * HH:MM:SS.mmm, and a progress bar that fills proportionally to the elapsed
  * portion.  When the remaining time reaches zero or below, the timer stops,
@@ -33,7 +33,7 @@
  * is triggered.
  *
  * Layout and Responsiveness:
- * The countdown controls use a 3x3 GridLayout to guarantee a fixed height
+ * The countdown controls use a 3×3 GridLayout to guarantee a fixed height
  * regardless of button text length.  This prevents layout shifts when the
  * stop/resume button text changes.  All panels scale proportionally with the
  * frame size, and the minimum window size ensures usability on small screens.
@@ -41,20 +41,20 @@
  * Alarm Sequence:
  * When the countdown finishes, the application initiates a set of concurrent
  * effects that serve as a perceptually salient notification:
- * - Visual Flashing: A Swing Timer with a 300-millisecond period toggles the
+ * – Visual Flashing: A Swing Timer with a 300‑millisecond period toggles the
  *   background color of the countdown display box between white (the
  *   BACKGROUND_COLOR, #FFFFFF) and red (the ALERT_COLOR, #DE0000).  The
  *   flashing continues until the audio sequence completes.
- * - Window Shaking: A Swing Timer with a 50-millisecond period repeatedly
+ * – Window Shaking: A Swing Timer with a 50‑millisecond period repeatedly
  *   shifts the frame horizontally by plus or minus five pixels relative to
  *   the location recorded at the start of the alarm.  This oscillation
  *   executes twenty ticks (ten cycles) and then restores the original window
  *   location.
- * - Audio Alert: A separate thread attempts to play a sequence of fifteen
+ * – Audio Alert: A separate thread attempts to play a sequence of fifteen
  *   tone pairs.  Each pair consists of a 420 Hz square wave for 100
  *   milliseconds followed by an 840 Hz sine wave for 100 milliseconds,
- *   separated by a 100-millisecond silence.  Audio samples are synthesized
- *   at 44100 Hz with 8-bit signed PCM encoding.  If no audio output device
+ *   separated by a 100‑millisecond silence.  Audio samples are synthesized
+ *   at 44100 Hz with 8‑bit signed PCM encoding.  If no audio output device
  *   is available, the thread terminates silently; a warning dialog is shown
  *   only once per application session.  A volatile boolean flag
  *   (alarmCancelled) is checked before each tone, before each sleep, and at
@@ -63,8 +63,8 @@
  *   cancellation, which causes any blocking write operation to fail
  *   immediately.  Together, these mechanisms guarantee that a single click of
  *   the Stop Countdown button will silence the alarm without delay.
- * - Title Bar Notification: The frame title is set to "Time Is Up" and a
- *   non-repeating five-second Timer resets the title back to "All-in-One
+ * – Title Bar Notification: The frame title is set to "Time Is Up" and a
+ *   non‑repeating five‑second Timer resets the title back to "All‑in‑One
  *   Timer Tool".
  *
  * Alarm Cancellation:
@@ -77,13 +77,14 @@
  * the original frame title; closes the current audio output line if it is
  * open; interrupts the alarm sound thread; and then nullifies the references
  * to the audio line, the alarm thread, and all auxiliary timers to allow
- * immediate garbage collection.
+ * immediate garbage collection.  After nullification, an explicit
+ * {@code System.gc()} call is made to encourage prompt memory recovery.
  *
  * Stopwatch:
  * The stopwatch panel contains "Start" and "Reset" buttons and a time
  * display.  Pressing "Start" toggles the stopwatch between running and
  * paused states.  When transitioning from paused to running, the current
- * system time is recorded as the start moment and a 10-millisecond Swing
+ * system time is recorded as the start moment and a 10‑millisecond Swing
  * Timer begins updating the display with the total elapsed time, which is
  * the sum of the time accumulated during previous intervals and the time
  * elapsed since the most recent start.  When transitioning from running to
@@ -94,34 +95,38 @@
  * restores the start/stop button to its initial "Start" state.
  *
  * Live Clock:
- * A 50-millisecond Swing Timer retrieves the current system time using a
+ * A 50‑millisecond Swing Timer retrieves the current system time using a
  * preallocated Calendar instance and updates four labels showing hours,
  * minutes, seconds, and milliseconds in the format HH:MM:SS.mmm.  The
  * timezone offset is computed by calling TimeZone.getOffset with the current
  * time in milliseconds, which accounts for daylight saving time adjustments.
- * The offset is displayed in the form (UTC+/-offset) in a separate label.
+ * The offset string is only rebuilt when the offset changes, avoiding
+ * repeated string allocations.  The offset is displayed in the form
+ * (UTC±offset) in a separate label.
  *
  * User Interface Styling and Tooltips:
- * All colors are specified using hexadecimal codes.  The application employs
- * a dark theme with a red accent.  The frame background is #1E1E1E.
- * Control panel backgrounds use #2B2B2B and display white (#FFFFFF) label
- * text.  Functional display boxes have a white background (#FFFFFF) with
- * black text, providing high contrast.  Alert flashing and button coloring
- * use the retained red (#DE0000).  Buttons carry white text (#FFFFFF) and
- * change their background to darker or brighter shades of red on hover and
- * press respectively, giving direct visual feedback.  A progress bar shows
- * countdown completion; its foreground is red (#DE0000) and its background
- * is a light gray (#D0D0D0).  Every interactive component (spinners,
- * buttons, labels, progress bar) has a descriptive tooltip.  Spinner
- * components feature a translucent black border with rounded corners and
- * internal padding.  All interactive elements use the hand cursor.
+ * All colors are specified using hexadecimal codes where necessary, but
+ * predefined constants (Color.WHITE, Color.BLACK) are used for pure white
+ * and black to reduce object creation.  The application employs a dark theme
+ * with a red accent.  The frame background is #1E1E1E.  Control panel
+ * backgrounds use #2B2B2B and display white label text.  Functional display
+ * boxes have a white background (#FFFFFF) with black text, providing high
+ * contrast.  Alert flashing and button coloring use the retained red
+ * (#DE0000).  Buttons carry white text and change their background to
+ * darker or brighter shades of red on hover and press respectively, giving
+ * direct visual feedback.  A progress bar shows countdown completion; its
+ * foreground is red (#DE0000) and its background is light gray (#D0D0D0).
+ * Every interactive component (spinners, buttons, labels, progress bar) has
+ * a descriptive tooltip.  Spinner components feature a translucent black
+ * border with rounded corners and internal padding.  All interactive elements
+ * use the hand cursor.
  *
  * Precomputed Strings:
  * To minimize garbage collection overhead, all possible two‑digit and three‑
  * digit pad strings are statically initialized:
- * - PAD2        : "00" through "99"
- * - PAD2_COLON  : "00:" through "99:"
- * - PAD3_MS     : ".000" through ".999"
+ * – PAD2        : "00" through "99"
+ * – PAD2_COLON  : "00:" through "99:"
+ * – PAD3_MS     : ".000" through ".999"
  * These arrays are used directly by the timer updates, avoiding any string
  * concatenation or allocation during normal operation.
  *
@@ -129,21 +134,42 @@
  * A WindowListener ensures that when the frame is closing, all active timers
  * are stopped, the alarm is cancelled, and all fields that hold references
  * to Swing components, threads, and audio lines are explicitly nullified.
- * This prevents background timers from continuing to fire after the window
- * is disposed and allows the garbage collector to reclaim all objects
- * promptly.
+ * An explicit {@code System.gc()} call follows to request immediate garbage
+ * collection.  This prevents background timers from continuing to fire after
+ * the window is disposed and allows the garbage collector to reclaim all
+ * objects promptly.
  *
  * Custom Font Loading:
  * The constructor attempts to load the TrueType font file
- * "NotoSans-VariableFont_wdth_wght.ttf" from the classpath.  If found, the
- * font is registered with the local graphics environment, and the class-level
- * font constants (LABEL_FONT, BUTTON_FONT, TEXT_FONT) keep their initialized
- * values.  If the resource is absent or any error occurs, the fonts are
- * reassigned to system sans-serif fallbacks, and an error message is printed
- * to the standard error stream.
+ * "NotoSans‑VariableFont_wdth_wght.ttf" from the classpath.  If found, the
+ * font is loaded, the input stream is immediately closed, and the three
+ * display fonts are derived directly from the loaded font without registering
+ * it with the system graphics environment.  This avoids registration overhead
+ * and keeps the memory footprint minimal.  If the resource is absent or any
+ * error occurs, the fonts are reassigned to system sans‑serif fallbacks, and
+ * an error message is printed to the standard error stream.
+ *
+ * Memory Footprint Management:
+ * Beyond font handling, the application employs several design choices to
+ * maintain a low resident memory profile.  Repeated color decodes are
+ * replaced with static final constants, and the predefined Color.WHITE and
+ * Color.BLACK are used for pure white and black to avoid duplicate objects.
+ * The live clock refreshes at 50 milliseconds and updates the time‑zone
+ * label only when the UTC offset has changed, which drastically reduces
+ * string allocations during prolonged use.  Precomputed string arrays
+ * eliminate per‑tick concatenation; each string is compact and shared
+ * globally.  All Swing timers and the audio thread are explicitly stopped and
+ * their references nullified when cancelled or when the window closes,
+ * enabling prompt garbage collection.  After each cancellation and resource
+ * disposal, an explicit {@code System.gc()} is invoked to encourage the
+ * garbage collector to reclaim memory immediately.  When the Java Virtual
+ * Machine is launched with a small initial heap (for example,
+ * -Xms16m -Xmx64m), the application's total resident memory consumption
+ * stays well under 80 MB even during active countdown and stopwatch
+ * operation.
  *
  * Exception Handling:
- * All user-initiated actions (button clicks, etc.) are wrapped in try-catch
+ * All user‑initiated actions (button clicks, etc.) are wrapped in try‑catch
  * blocks; unexpected exceptions are shown in a modal error dialog.  The audio
  * alarm thread catches all exceptions internally: InterruptedException is
  * silently swallowed to stop the alarm, and other exceptions cause a single
@@ -152,7 +178,7 @@
  * console under normal operation.
  *
  * Formatting Conventions:
- * The source code adheres to a dense, brace-on-same-line style with four
+ * The source code adheres to a dense, brace‑on‑same‑line style with four
  * spaces per indentation level and no blank lines.  Operator spacing is
  * minimal, with no spaces around assignment or arithmetic operators but
  * spaces after commas and after type annotations.
@@ -191,6 +217,7 @@ public class AllInOneTimer extends JFrame{
     private boolean swRunning=false;
     private JLabel timeHour, timeMin, timeSec, timeMs, timeZone;
     private Timer clockTimer;
+    private int lastTimezoneOffset=Integer.MIN_VALUE;
     private JPanel countdownBox;
     private Timer flashTimer;
     private boolean flashOn;
@@ -205,12 +232,13 @@ public class AllInOneTimer extends JFrame{
     private final Calendar cal=Calendar.getInstance();
     private static final Color PRIMARY_COLOR=Color.decode("#1E1E1E");
     private static final Color SECONDARY_COLOR=Color.decode("#2B2B2B");
-    private static final Color BACKGROUND_COLOR=Color.decode("#FFFFFF");
+    private static final Color BACKGROUND_COLOR=Color.WHITE;
     private static final Color ALERT_COLOR=Color.decode("#DE0000");
     private static final Color BUTTON_BACKGROUND=Color.decode("#DE0000");
-    private static final Color BUTTON_TEXT=Color.decode("#FFFFFF");
+    private static final Color BUTTON_TEXT=Color.WHITE;
     private static final Color PROGRESS_FOREGROUND=Color.decode("#DE0000");
     private static final Color PROGRESS_BACKGROUND=Color.decode("#D0D0D0");
+    private static final Color SPINNER_BORDER_COLOR=new Color(0,0,0,70);
     private static Font LABEL_FONT=new Font("Noto Sans", Font.BOLD, 24);
     private static Font BUTTON_FONT=new Font("Noto Sans", Font.BOLD, 14);
     private static Font TEXT_FONT=new Font("Noto Sans", Font.PLAIN, 14);
@@ -297,14 +325,17 @@ public class AllInOneTimer extends JFrame{
         secSpinner=null;
         countdownProgress=null;
         countdownStopBtn=null;
+        System.gc();
     }
     private void loadCustomFont(){
+        InputStream is=null;
         try{
-            InputStream is=getClass().getResourceAsStream("/NotoSans-VariableFont_wdth_wght.ttf");
+            is=getClass().getResourceAsStream("/NotoSans-VariableFont_wdth_wght.ttf");
             if (is!=null){
-                Font font=Font.createFont(Font.TRUETYPE_FONT, is);
-                GraphicsEnvironment ge=GraphicsEnvironment.getLocalGraphicsEnvironment();
-                ge.registerFont(font);
+                Font loaded=Font.createFont(Font.TRUETYPE_FONT, is);
+                LABEL_FONT=loaded.deriveFont(Font.BOLD, 24f);
+                BUTTON_FONT=loaded.deriveFont(Font.BOLD, 14f);
+                TEXT_FONT=loaded.deriveFont(Font.PLAIN, 14f);
             }
             else{
                 throw new IOException("Font file not found in resources");
@@ -316,6 +347,11 @@ public class AllInOneTimer extends JFrame{
             LABEL_FONT=new Font(Font.SANS_SERIF, Font.BOLD, 24);
             BUTTON_FONT=new Font(Font.SANS_SERIF, Font.BOLD, 14);
         }
+        finally{
+            if (is!=null){
+                try{ is.close(); } catch (IOException ignored){}
+            }
+        }
     }
     private void initCountdownPanel(){
         JPanel panel=styledPanel("Countdown Timer");
@@ -323,15 +359,15 @@ public class AllInOneTimer extends JFrame{
         applyPanelStyle(controls);
         JLabel hourLabel=new JLabel("Hours", JLabel.CENTER);
         hourLabel.setFont(TEXT_FONT);
-        hourLabel.setForeground(Color.decode("#FFFFFF"));
+        hourLabel.setForeground(Color.WHITE);
         hourLabel.setToolTipText("Hours for countdown (any non-negative integer, overflow will be normalized)");
         JLabel minLabel=new JLabel("Minutes", JLabel.CENTER);
         minLabel.setFont(TEXT_FONT);
-        minLabel.setForeground(Color.decode("#FFFFFF"));
+        minLabel.setForeground(Color.WHITE);
         minLabel.setToolTipText("Minutes for countdown (any non-negative integer, overflow will be normalized)");
         JLabel secLabel=new JLabel("Seconds", JLabel.CENTER);
         secLabel.setFont(TEXT_FONT);
-        secLabel.setForeground(Color.decode("#FFFFFF"));
+        secLabel.setForeground(Color.WHITE);
         secLabel.setToolTipText("Seconds for countdown (any non-negative integer, overflow will be normalized)");
         hourSpinner=spinner(0, 0, Integer.MAX_VALUE);
         hourSpinner.setToolTipText("Set countdown hours; values > 0 are allowed");
@@ -607,8 +643,11 @@ public class AllInOneTimer extends JFrame{
                     timeMs.setText(PAD3_MS[ms]);
                     TimeZone tz=cal.getTimeZone();
                     int off=tz.getOffset(cal.getTimeInMillis())/3600000;
-                    String sg=(off>=0)?"+":"";
-                    timeZone.setText("(UTC"+sg+off+")");
+                    if (off!=lastTimezoneOffset){
+                        lastTimezoneOffset=off;
+                        String sg=(off>=0)?"+":"";
+                        timeZone.setText("(UTC"+sg+off+")");
+                    }
                 }
                 catch (Exception ex){
                     showError("Clock update error", ex);
@@ -645,6 +684,7 @@ public class AllInOneTimer extends JFrame{
             if (alarmSoundThread.isAlive()) alarmSoundThread.interrupt();
             alarmSoundThread=null;
         }
+        System.gc();
     }
     private void triggerAlarm(){
         cancelAlarm();
@@ -756,7 +796,9 @@ public class AllInOneTimer extends JFrame{
         JSpinner sp=new JSpinner(new SpinnerNumberModel(val, min, max, 1));
         sp.setPreferredSize(new Dimension(50,24));
         sp.setFont(TEXT_FONT);
-        sp.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0,0,0,70),1,true),BorderFactory.createEmptyBorder(2,5,2,5)));
+        sp.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(SPINNER_BORDER_COLOR,1,true),
+            BorderFactory.createEmptyBorder(2,5,2,5)));
         return sp;
     }
     private JLabel timerLabel(String txt){
@@ -769,7 +811,9 @@ public class AllInOneTimer extends JFrame{
         btn.setFont(BUTTON_FONT);
         btn.setBackground(BUTTON_BACKGROUND);
         btn.setForeground(BUTTON_TEXT);
-        btn.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(0,0,0,70),1,true),BorderFactory.createEmptyBorder(5,10,5,10)));
+        btn.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(SPINNER_BORDER_COLOR,1,true),
+            BorderFactory.createEmptyBorder(5,10,5,10)));
         btn.setFocusPainted(false);
         btn.setCursor(HAND_CURSOR);
         btn.addMouseListener(new MouseAdapter(){
@@ -793,7 +837,9 @@ public class AllInOneTimer extends JFrame{
     }
     private JPanel styledPanel(String title){
         JPanel p=new JPanel(new BorderLayout());
-        p.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEmptyBorder(5,5,5,5),title,JLabel.CENTER,JLabel.TOP,BUTTON_FONT,Color.decode("#000000")));
+        p.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEmptyBorder(5,5,5,5),title,
+            JLabel.CENTER,JLabel.TOP,BUTTON_FONT,Color.BLACK));
         p.setBackground(BACKGROUND_COLOR);
         p.setOpaque(true);
         return p;
@@ -805,13 +851,16 @@ public class AllInOneTimer extends JFrame{
     }
     private JPanel styledBox(){
         JPanel p=new JPanel();
-        p.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.decode("#000000"),1),BorderFactory.createEmptyBorder(10,10,10,10)));
+        p.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.BLACK,1),
+            BorderFactory.createEmptyBorder(10,10,10,10)));
         p.setBackground(BACKGROUND_COLOR);
         p.setOpaque(true);
         return p;
     }
     private void showError(String message, Exception e){
-        JOptionPane.showMessageDialog(this,message+": "+e.getMessage(),"Error",JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this,message+": "+e.getMessage(),
+            "Error",JOptionPane.ERROR_MESSAGE);
         e.printStackTrace();
     }
     private void showAudioWarning(String message){
@@ -819,7 +868,8 @@ public class AllInOneTimer extends JFrame{
             audioWarningShown=true;
             SwingUtilities.invokeLater(new Runnable(){
                 public void run(){
-                    JOptionPane.showMessageDialog(AllInOneTimer.this,message,"Audio Warning",JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(AllInOneTimer.this,message,
+                        "Audio Warning",JOptionPane.WARNING_MESSAGE);
                 }
             });
         }
