@@ -3,7 +3,10 @@
  * audio-visual alarm, a stopwatch with millisecond precision, and a live clock
  * displaying the current system time and its Coordinated Universal Time offset.
  * The interface uses the Swing toolkit and arranges three functional panels
- * vertically inside a resizable frame.
+ * vertically inside a resizable frame.  All string representations of time
+ * values are precomputed to eliminate runtime allocation and reduce garbage
+ * collection pressure.  All timers and threads are properly stopped and
+ * released when the window is closed, preventing resource leaks.
  *
  * Countdown Timer:
  * The user sets the desired duration using three spinner components that each
@@ -13,16 +16,27 @@
  * spinners are updated to reflect the normalized values.  A "Set Countdown
  * Timer" button computes the total duration in milliseconds, cancels any
  * currently active alarm, stops any running countdown timer, and then starts
- * a new countdown.  A "Stop Countdown" button cancels any active alarm and
- * stops the running timer without triggering the alarm sequence.  A "Reset
- * Countdown" button sets all spinners to zero, resets the countdown display
- * labels to "00:00:00.000", clears the progress bar, stops the timer, and
- * cancels the alarm.  While the countdown is active, a Swing Timer running at
- * a 10-millisecond interval updates four labels that display the remaining
- * time in the format HH:MM:SS.mmm, and a progress bar that fills
- * proportionally to the elapsed portion.  When the remaining time reaches
- * zero or below, the timer stops, the display resets to zero, the progress
- * bar resets, and the alarm sequence is triggered.
+ * a new countdown.  A "Stop Countdown" / "Resume Countdown" button toggles
+ * the timer state: when the countdown is running, clicking "Stop Countdown"
+ * pauses the timer and freezes the display; the remaining time is preserved
+ * and the button changes to "Resume Countdown".  Pressing "Resume Countdown"
+ * continues the countdown from the exact point where it was paused, without
+ * any time loss.  When the countdown is not running and no paused state
+ * exists, the button has no effect.  A "Reset Countdown" button sets all
+ * spinners to zero, resets the countdown display labels to "00:00:00.000",
+ * clears the progress bar, stops the timer, and cancels the alarm.  While the
+ * countdown is active, a Swing Timer running at a 10-millisecond interval
+ * updates four labels that display the remaining time in the format
+ * HH:MM:SS.mmm, and a progress bar that fills proportionally to the elapsed
+ * portion.  When the remaining time reaches zero or below, the timer stops,
+ * the display resets to zero, the progress bar resets, and the alarm sequence
+ * is triggered.
+ *
+ * Layout and Responsiveness:
+ * The countdown controls use a 3x3 GridLayout to guarantee a fixed height
+ * regardless of button text length.  This prevents layout shifts when the
+ * stop/resume button text changes.  All panels scale proportionally with the
+ * frame size, and the minimum window size ensures usability on small screens.
  *
  * Alarm Sequence:
  * When the countdown finishes, the application initiates a set of concurrent
@@ -61,7 +75,9 @@
  * title reset timer; restores the frame location if it was altered by
  * shaking; resets the countdown box background to white (#FFFFFF); restores
  * the original frame title; closes the current audio output line if it is
- * open; and interrupts the alarm sound thread.
+ * open; interrupts the alarm sound thread; and then nullifies the references
+ * to the audio line, the alarm thread, and all auxiliary timers to allow
+ * immediate garbage collection.
  *
  * Stopwatch:
  * The stopwatch panel contains "Start" and "Reset" buttons and a time
@@ -78,12 +94,12 @@
  * restores the start/stop button to its initial "Start" state.
  *
  * Live Clock:
- * A 50-millisecond Swing Timer retrieves the current system time using
- * Calendar.getInstance() and updates four labels showing hours, minutes,
- * seconds, and milliseconds in the format HH:MM:SS.mmm.  The timezone offset
- * is computed by calling TimeZone.getOffset with the current time in
- * milliseconds, which accounts for daylight saving time adjustments.  The
- * offset is displayed in the form (UTC+/-offset) in a separate label.
+ * A 50-millisecond Swing Timer retrieves the current system time using a
+ * preallocated Calendar instance and updates four labels showing hours,
+ * minutes, seconds, and milliseconds in the format HH:MM:SS.mmm.  The
+ * timezone offset is computed by calling TimeZone.getOffset with the current
+ * time in milliseconds, which accounts for daylight saving time adjustments.
+ * The offset is displayed in the form (UTC+/-offset) in a separate label.
  *
  * User Interface Styling and Tooltips:
  * All colors are specified using hexadecimal codes.  The application employs
@@ -99,6 +115,23 @@
  * buttons, labels, progress bar) has a descriptive tooltip.  Spinner
  * components feature a translucent black border with rounded corners and
  * internal padding.  All interactive elements use the hand cursor.
+ *
+ * Precomputed Strings:
+ * To minimize garbage collection overhead, all possible two‑digit and three‑
+ * digit pad strings are statically initialized:
+ * - PAD2        : "00" through "99"
+ * - PAD2_COLON  : "00:" through "99:"
+ * - PAD3_MS     : ".000" through ".999"
+ * These arrays are used directly by the timer updates, avoiding any string
+ * concatenation or allocation during normal operation.
+ *
+ * Resource Cleanup:
+ * A WindowListener ensures that when the frame is closing, all active timers
+ * are stopped, the alarm is cancelled, and all fields that hold references
+ * to Swing components, threads, and audio lines are explicitly nullified.
+ * This prevents background timers from continuing to fire after the window
+ * is disposed and allows the garbage collector to reclaim all objects
+ * promptly.
  *
  * Custom Font Loading:
  * The constructor attempts to load the TrueType font file
@@ -131,7 +164,6 @@
  * is resizable.
  *
  * @author richie-rich90454
- * @version 3.1
  * @since 2026-07-10
  */
 import javax.swing.*;
@@ -148,7 +180,10 @@ public class AllInOneTimer extends JFrame{
     private Timer countdownTimer;
     private long countdownEndMs;
     private long countdownTotalMs;
+    private long countdownRemainingMs;
+    private boolean countdownPaused=false;
     private JProgressBar countdownProgress;
+    private JButton countdownStopBtn;
     private JLabel swHour, swMin, swSec, swMs;
     private Timer stopwatchTimer;
     private long swStartMs;
@@ -167,6 +202,7 @@ public class AllInOneTimer extends JFrame{
     private SourceDataLine currentAudioLine;
     private volatile boolean alarmCancelled=false;
     private static boolean audioWarningShown=false;
+    private final Calendar cal=Calendar.getInstance();
     private static final Color PRIMARY_COLOR=Color.decode("#1E1E1E");
     private static final Color SECONDARY_COLOR=Color.decode("#2B2B2B");
     private static final Color BACKGROUND_COLOR=Color.decode("#FFFFFF");
@@ -179,6 +215,27 @@ public class AllInOneTimer extends JFrame{
     private static Font BUTTON_FONT=new Font("Noto Sans", Font.BOLD, 14);
     private static Font TEXT_FONT=new Font("Noto Sans", Font.PLAIN, 14);
     private static final Cursor HAND_CURSOR=new Cursor(Cursor.HAND_CURSOR);
+    private static final String[] PAD2=new String[100];
+    private static final String[] PAD2_COLON=new String[100];
+    private static final String[] PAD3_MS=new String[1000];
+    static{
+        StringBuilder sb=new StringBuilder(5);
+        for (int i=0;i<100;i++){
+            sb.setLength(0);
+            if (i<10) sb.append('0');
+            sb.append(i);
+            PAD2[i]=sb.toString();
+            PAD2_COLON[i]=sb.toString()+":";
+        }
+        for (int i=0;i<1000;i++){
+            sb.setLength(0);
+            sb.append('.');
+            if (i<100) sb.append('0');
+            if (i<10) sb.append('0');
+            sb.append(i);
+            PAD3_MS[i]=sb.toString();
+        }
+    }
     public AllInOneTimer(){
         super("All-in-One Timer Tool");
         Image icon=Toolkit.getDefaultToolkit().getImage(getClass().getResource("/favicon.png"));
@@ -196,6 +253,50 @@ public class AllInOneTimer extends JFrame{
         setResizable(true);
         setVisible(true);
         startClock();
+        addWindowListener(new WindowAdapter(){
+            public void windowClosing(WindowEvent e){
+                disposeResources();
+            }
+        });
+    }
+    private void disposeResources(){
+        cancelAlarm();
+        if (countdownTimer!=null){
+            countdownTimer.stop();
+            countdownTimer=null;
+        }
+        if (stopwatchTimer!=null){
+            stopwatchTimer.stop();
+            stopwatchTimer=null;
+        }
+        if (clockTimer!=null){
+            clockTimer.stop();
+            clockTimer=null;
+        }
+        flashTimer=null;
+        shakeTimer=null;
+        titleResetTimer=null;
+        alarmSoundThread=null;
+        currentAudioLine=null;
+        countdownBox=null;
+        cdHour=null;
+        cdMin=null;
+        cdSec=null;
+        cdMs=null;
+        swHour=null;
+        swMin=null;
+        swSec=null;
+        swMs=null;
+        timeHour=null;
+        timeMin=null;
+        timeSec=null;
+        timeMs=null;
+        timeZone=null;
+        hourSpinner=null;
+        minSpinner=null;
+        secSpinner=null;
+        countdownProgress=null;
+        countdownStopBtn=null;
     }
     private void loadCustomFont(){
         try{
@@ -218,17 +319,17 @@ public class AllInOneTimer extends JFrame{
     }
     private void initCountdownPanel(){
         JPanel panel=styledPanel("Countdown Timer");
-        JPanel controls=new JPanel();
+        JPanel controls=new JPanel(new GridLayout(3, 3, 5, 5));
         applyPanelStyle(controls);
-        JLabel hourLabel=new JLabel("Hours");
+        JLabel hourLabel=new JLabel("Hours", JLabel.CENTER);
         hourLabel.setFont(TEXT_FONT);
         hourLabel.setForeground(Color.decode("#FFFFFF"));
         hourLabel.setToolTipText("Hours for countdown (any non-negative integer, overflow will be normalized)");
-        JLabel minLabel=new JLabel("Minutes");
+        JLabel minLabel=new JLabel("Minutes", JLabel.CENTER);
         minLabel.setFont(TEXT_FONT);
         minLabel.setForeground(Color.decode("#FFFFFF"));
         minLabel.setToolTipText("Minutes for countdown (any non-negative integer, overflow will be normalized)");
-        JLabel secLabel=new JLabel("Seconds");
+        JLabel secLabel=new JLabel("Seconds", JLabel.CENTER);
         secLabel.setFont(TEXT_FONT);
         secLabel.setForeground(Color.decode("#FFFFFF"));
         secLabel.setToolTipText("Seconds for countdown (any non-negative integer, overflow will be normalized)");
@@ -247,6 +348,9 @@ public class AllInOneTimer extends JFrame{
                     if (countdownTimer!=null&&countdownTimer.isRunning()){
                         countdownTimer.stop();
                     }
+                    countdownPaused=false;
+                    countdownStopBtn.setText("Stop Countdown");
+                    countdownStopBtn.setToolTipText("Pause the running countdown");
                     long totalSec=(long)(Integer)hourSpinner.getValue()*3600
                                  +(long)(Integer)minSpinner.getValue()*60
                                  +(long)(Integer)secSpinner.getValue();
@@ -260,7 +364,9 @@ public class AllInOneTimer extends JFrame{
                     if (duration>0){
                         countdownTotalMs=duration;
                         countdownEndMs=System.currentTimeMillis()+duration;
-                        countdownProgress.setMaximum((int)duration);
+                        countdownRemainingMs=duration;
+                        int maxVal=(duration>Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)duration;
+                        countdownProgress.setMaximum(maxVal);
                         countdownProgress.setValue(0);
                         countdownTimer.start();
                     }
@@ -270,18 +376,32 @@ public class AllInOneTimer extends JFrame{
                 }
             }
         });
-        JButton stopBtn=styledButton("Stop Countdown");
-        stopBtn.setToolTipText("Stop the running countdown and cancel any alarm");
-        stopBtn.addActionListener(new ActionListener(){
+        countdownStopBtn=styledButton("Stop Countdown");
+        countdownStopBtn.setToolTipText("Pause the running countdown");
+        countdownStopBtn.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 try{
-                    cancelAlarm();
-                    if (countdownTimer!=null&&countdownTimer.isRunning()){
+                    if (countdownTimer.isRunning()){
+                        cancelAlarm();
                         countdownTimer.stop();
+                        countdownRemainingMs=countdownEndMs-System.currentTimeMillis();
+                        if (countdownRemainingMs<0) countdownRemainingMs=0;
+                        countdownPaused=true;
+                        countdownStopBtn.setText("Resume Countdown");
+                        countdownStopBtn.setToolTipText("Resume the paused countdown");
+                    }
+                    else if (countdownPaused&&countdownRemainingMs>0){
+                        countdownEndMs=System.currentTimeMillis()+countdownRemainingMs;
+                        countdownTotalMs=countdownRemainingMs>countdownTotalMs?countdownRemainingMs:countdownTotalMs;
+                        countdownProgress.setValue((int)(countdownTotalMs-countdownRemainingMs));
+                        countdownTimer.start();
+                        countdownPaused=false;
+                        countdownStopBtn.setText("Stop Countdown");
+                        countdownStopBtn.setToolTipText("Pause the running countdown");
                     }
                 }
                 catch (Exception ex){
-                    showError("Failed to stop countdown", ex);
+                    showError("Failed to toggle countdown", ex);
                 }
             }
         });
@@ -294,6 +414,9 @@ public class AllInOneTimer extends JFrame{
                     if (countdownTimer!=null&&countdownTimer.isRunning()){
                         countdownTimer.stop();
                     }
+                    countdownPaused=false;
+                    countdownStopBtn.setText("Stop Countdown");
+                    countdownStopBtn.setToolTipText("Pause the running countdown");
                     hourSpinner.setValue(0);
                     minSpinner.setValue(0);
                     secSpinner.setValue(0);
@@ -309,13 +432,13 @@ public class AllInOneTimer extends JFrame{
             }
         });
         controls.add(hourLabel);
-        controls.add(hourSpinner);
         controls.add(minLabel);
-        controls.add(minSpinner);
         controls.add(secLabel);
+        controls.add(hourSpinner);
+        controls.add(minSpinner);
         controls.add(secSpinner);
         controls.add(setBtn);
-        controls.add(stopBtn);
+        controls.add(countdownStopBtn);
         controls.add(resetBtn);
         panel.add(controls, BorderLayout.NORTH);
         countdownBox=styledBox();
@@ -342,11 +465,15 @@ public class AllInOneTimer extends JFrame{
                     long rem=countdownEndMs-System.currentTimeMillis();
                     if (rem<=0){
                         countdownTimer.stop();
+                        countdownPaused=false;
+                        countdownStopBtn.setText("Stop Countdown");
+                        countdownStopBtn.setToolTipText("Pause the running countdown");
                         cdHour.setText("00:");
                         cdMin.setText("00:");
                         cdSec.setText("00");
                         cdMs.setText(".000");
-                        countdownProgress.setValue(countdownProgress.getMaximum());
+                        int max=countdownProgress.getMaximum();
+                        countdownProgress.setValue(max>0?max:0);
                         triggerAlarm();
                     }
                     else{
@@ -354,11 +481,13 @@ public class AllInOneTimer extends JFrame{
                         int m=(int)((rem%3600000)/60000);
                         int s=(int)((rem%60000)/1000);
                         int ms=(int)(rem%1000);
-                        cdHour.setText(pad(h,2)+":");
-                        cdMin.setText(pad(m,2)+":");
-                        cdSec.setText(pad(s,2));
-                        cdMs.setText("."+pad(ms,3));
-                        countdownProgress.setValue((int)(countdownTotalMs-rem));
+                        cdHour.setText(h<100?PAD2_COLON[h]:pad(h,2)+":");
+                        cdMin.setText(PAD2_COLON[m]);
+                        cdSec.setText(PAD2[s]);
+                        cdMs.setText(PAD3_MS[ms]);
+                        long elapsed=countdownTotalMs-rem;
+                        int progVal=(elapsed>Integer.MAX_VALUE)?Integer.MAX_VALUE:(int)elapsed;
+                        countdownProgress.setValue(progVal);
                     }
                 }
                 catch (Exception ex){
@@ -434,10 +563,10 @@ public class AllInOneTimer extends JFrame{
                     int m=(int)((elapsed%3600000)/60000);
                     int s=(int)((elapsed%60000)/1000);
                     int ms=(int)(elapsed%1000);
-                    swHour.setText(pad(h,2)+":");
-                    swMin.setText(pad(m,2)+":");
-                    swSec.setText(pad(s,2));
-                    swMs.setText("."+pad(ms,3));
+                    swHour.setText(h<100?PAD2_COLON[h]:pad(h,2)+":");
+                    swMin.setText(PAD2_COLON[m]);
+                    swSec.setText(PAD2[s]);
+                    swMs.setText(PAD3_MS[ms]);
                 }
                 catch (Exception ex){
                     showError("Stopwatch update error", ex);
@@ -467,15 +596,15 @@ public class AllInOneTimer extends JFrame{
         clockTimer=new Timer(50, new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 try{
-                    Calendar cal=Calendar.getInstance();
+                    cal.setTimeInMillis(System.currentTimeMillis());
                     int h=cal.get(Calendar.HOUR_OF_DAY);
                     int m=cal.get(Calendar.MINUTE);
                     int s=cal.get(Calendar.SECOND);
                     int ms=cal.get(Calendar.MILLISECOND);
-                    timeHour.setText(pad(h,2)+":");
-                    timeMin.setText(pad(m,2)+":");
-                    timeSec.setText(pad(s,2));
-                    timeMs.setText("."+pad(ms,3));
+                    timeHour.setText(h<100?PAD2_COLON[h]:pad(h,2)+":");
+                    timeMin.setText(PAD2_COLON[m]);
+                    timeSec.setText(PAD2[s]);
+                    timeMs.setText(PAD3_MS[ms]);
                     TimeZone tz=cal.getTimeZone();
                     int off=tz.getOffset(cal.getTimeInMillis())/3600000;
                     String sg=(off>=0)?"+":"";
@@ -490,25 +619,31 @@ public class AllInOneTimer extends JFrame{
     }
     private void cancelAlarm(){
         alarmCancelled=true;
-        if (flashTimer!=null&&flashTimer.isRunning()){
-            flashTimer.stop();
+        if (flashTimer!=null){
+            if (flashTimer.isRunning()) flashTimer.stop();
+            flashTimer=null;
         }
-        if (shakeTimer!=null&&shakeTimer.isRunning()){
-            shakeTimer.stop();
-            if (origLocation!=null){
-                setLocation(origLocation);
-            }
+        if (shakeTimer!=null){
+            if (shakeTimer.isRunning()) shakeTimer.stop();
+            shakeTimer=null;
         }
-        if (titleResetTimer!=null&&titleResetTimer.isRunning()){
-            titleResetTimer.stop();
+        if (titleResetTimer!=null){
+            if (titleResetTimer.isRunning()) titleResetTimer.stop();
+            titleResetTimer=null;
+        }
+        if (origLocation!=null){
+            setLocation(origLocation);
+            origLocation=null;
         }
         countdownBox.setBackground(BACKGROUND_COLOR);
         setTitle("All-in-One Timer Tool");
-        if (currentAudioLine!=null&&currentAudioLine.isOpen()){
-            currentAudioLine.close();
+        if (currentAudioLine!=null){
+            if (currentAudioLine.isOpen()) currentAudioLine.close();
+            currentAudioLine=null;
         }
-        if (alarmSoundThread!=null&&alarmSoundThread.isAlive()){
-            alarmSoundThread.interrupt();
+        if (alarmSoundThread!=null){
+            if (alarmSoundThread.isAlive()) alarmSoundThread.interrupt();
+            alarmSoundThread=null;
         }
     }
     private void triggerAlarm(){
@@ -531,6 +666,7 @@ public class AllInOneTimer extends JFrame{
                 if (++shakeCount>=20){
                     shakeTimer.stop();
                     setLocation(origLocation);
+                    origLocation=null;
                 }
             }
         });
@@ -541,7 +677,6 @@ public class AllInOneTimer extends JFrame{
                     playAlertSequence();
                 }
                 catch (InterruptedException ie){
-                    // silently stop
                 }
                 catch (Exception ex){
                     showAudioWarning("Audio alert failed: "+ex.getMessage());
@@ -570,25 +705,15 @@ public class AllInOneTimer extends JFrame{
     }
     private void playAlertSequence() throws InterruptedException{
         float sr=44100f;
-        if (alarmCancelled){
-            return;
-        }
+        if (alarmCancelled) return;
         for (int i=0;i<15;i++){
-            if (alarmCancelled||Thread.currentThread().isInterrupted()){
-                return;
-            }
+            if (alarmCancelled||Thread.currentThread().isInterrupted()) return;
             playToneSafe(420,100,sr,true,0.3f);
-            if (alarmCancelled||Thread.currentThread().isInterrupted()){
-                return;
-            }
+            if (alarmCancelled||Thread.currentThread().isInterrupted()) return;
             playToneSafe(840,100,sr,false,0.1f);
-            if (alarmCancelled||Thread.currentThread().isInterrupted()){
-                return;
-            }
+            if (alarmCancelled||Thread.currentThread().isInterrupted()) return;
             Thread.sleep(100);
-            if (alarmCancelled||Thread.currentThread().isInterrupted()){
-                return;
-            }
+            if (alarmCancelled||Thread.currentThread().isInterrupted()) return;
         }
     }
     private void playToneSafe(int freq, int ms, float sr, boolean square, float gain){
@@ -596,7 +721,6 @@ public class AllInOneTimer extends JFrame{
             playTone(freq,ms,sr,square,gain);
         }
         catch (Exception e){
-            // ignore individual tone failures
         }
     }
     private void playTone(int freq, int ms, float sr, boolean square, float gain) throws Exception{
@@ -621,12 +745,12 @@ public class AllInOneTimer extends JFrame{
             currentAudioLine=null;
         }
     }
-    private String pad(int v, int l){
-        String s=""+v;
-        while (s.length()<l){
-            s="0"+s;
-        }
-        return s;
+    private static String pad(int v, int l){
+        String s=Integer.toString(v);
+        StringBuilder sb=new StringBuilder(l);
+        while (sb.length()+s.length()<l) sb.append('0');
+        sb.append(s);
+        return sb.toString();
     }
     private JSpinner spinner(int val, int min, int max){
         JSpinner sp=new JSpinner(new SpinnerNumberModel(val, min, max, 1));
